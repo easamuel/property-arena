@@ -107,7 +107,14 @@ const queuesOn = isQueuesEnabled();
           }),
         ]
       : []),
-    ThrottlerModule.forRoot({ throttlers: [config().throttle] }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: Number(process.env.THROTTLE_TTL) || 60000,
+          limit: Number(process.env.THROTTLE_LIMIT) || 100,
+        },
+      ],
+    }),
     AuditModule,
     LoggingModule,
     MailModule,
