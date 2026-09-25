@@ -15,6 +15,11 @@ export default () => ({
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN,
   },
+  resend: {
+    apiKey: process.env.RESEND_API_KEY,
+    fromEmail: process.env.RESEND_FROM_EMAIL,
+  },
+  adminNotifyEmail: process.env.ADMIN_NOTIFY_EMAIL || process.env.SEED_ADMIN_EMAIL,
   grafana: {
     lokiHost: process.env.GRAFANA_LOKI_HOST,
   },

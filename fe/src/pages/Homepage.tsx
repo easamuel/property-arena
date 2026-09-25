@@ -266,6 +266,8 @@ const HomePage = () => {
   const [marketTab, setMarketTab] = useState<'sales' | 'rental'>('sales');
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [newsletterBusy, setNewsletterBusy] = useState(false);
+  const [newsletterMsg, setNewsletterMsg] = useState('');
   const [heroReady, setHeroReady] = useState(true);
   const [articles, setArticles] = useState(GUIDES);
 
@@ -965,27 +967,45 @@ const HomePage = () => {
             </p>
           </div>
           <form
-            className="flex w-full max-w-md gap-2"
-            onSubmit={(e) => {
+            className="flex w-full max-w-md flex-col gap-2"
+            onSubmit={async (e) => {
               e.preventDefault();
-              setSubscribed(true);
-              setNewsletterEmail('');
+              const email = newsletterEmail.trim();
+              if (!email) return;
+              setNewsletterBusy(true);
+              setNewsletterMsg('');
+              try {
+                await ADMIN_SERVICE.submitPublic('newsletter', { email, source: 'homepage' });
+                setSubscribed(true);
+                setNewsletterEmail('');
+                setNewsletterMsg('Check your inbox — you’re on the list.');
+              } catch (err) {
+                setNewsletterMsg(err instanceof Error ? err.message : 'Could not subscribe');
+              } finally {
+                setNewsletterBusy(false);
+              }
             }}
           >
-            <input
-              type="email"
-              required
-              value={newsletterEmail}
-              onChange={(e) => setNewsletterEmail(e.target.value)}
-              placeholder="Enter your email address"
-              className="flex-1 rounded-lg border-0 bg-white px-4 py-3 text-sm text-gray-900 outline-none ring-2 ring-transparent focus:ring-brand-green"
-            />
-            <button
-              type="submit"
-              className="rounded-lg bg-brand-green px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-green-dark"
-            >
-              {subscribed ? 'Subscribed' : 'Subscribe'}
-            </button>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                required
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                placeholder="Enter your email address"
+                className="flex-1 rounded-lg border-0 bg-white px-4 py-3 text-sm text-gray-900 outline-none ring-2 ring-transparent focus:ring-brand-green"
+              />
+              <button
+                type="submit"
+                disabled={newsletterBusy || subscribed}
+                className="rounded-lg bg-brand-green px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-green-dark disabled:opacity-60"
+              >
+                {subscribed ? 'Subscribed' : newsletterBusy ? '…' : 'Subscribe'}
+              </button>
+            </div>
+            {newsletterMsg ? (
+              <p className="text-xs text-white/80">{newsletterMsg}</p>
+            ) : null}
           </form>
         </div>
       </section>

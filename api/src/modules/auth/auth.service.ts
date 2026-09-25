@@ -17,6 +17,7 @@ import {
 } from './dto/auth.dto';
 import { ROLE_ENUM, User } from '@modules/user/schemas/user.schema';
 import { AgentService } from '@modules/agent/agent.service';
+import { MailService } from '@modules/mail/mail.service';
 
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
@@ -36,6 +37,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly agentService: AgentService,
+    private readonly mailService: MailService,
     @Inject(LOGGER) logger: Logger,
   ) {
     this.logger = logger.child({ service: AuthService.name });
@@ -277,7 +279,7 @@ export class AuthService {
   }
 
   /**
-   * Delivers auth links via optional SMTP (AUTH_SMTP_*) or logs them.
+   * Delivers auth links via Resend (preferred), optional SMTP / webhook, or logs them.
    * Outside production, also returns the link so local FE can show DevLinkBox.
    * Set FRONTEND_URL in production so links point at the live site.
    */
@@ -305,11 +307,22 @@ export class AuthService {
     email: string,
     link: string,
   ) {
+    if (this.mailService.isConfigured()) {
+      const ok = await this.mailService.sendAuthLink(kind, email, link);
+      if (ok) return;
+    }
+
     const host = process.env.AUTH_SMTP_HOST;
     const user = process.env.AUTH_SMTP_USER;
     const pass = process.env.AUTH_SMTP_PASS;
     const from = process.env.AUTH_SMTP_FROM || user;
     if (!host || !user || !pass || !from) {
+      if (!this.mailService.isConfigured()) {
+        this.logger.warn('No Resend or SMTP configured — auth email not sent', {
+          kind,
+          email,
+        });
+      }
       return;
     }
     const subject =
@@ -320,8 +333,6 @@ export class AuthService {
       kind === 'reset-password'
         ? `Reset your password: ${link}\n\nIf you did not request this, ignore this email.`
         : `Verify your email: ${link}\n\nWelcome to PropertyArena.`;
-    // Minimal SMTP via Node fetch to a webhook OR nodemailer if present —
-    // use raw TCP-free approach: HTTP relay if AUTH_EMAIL_WEBHOOK set.
     const webhook = process.env.AUTH_EMAIL_WEBHOOK;
     if (webhook) {
       await fetch(webhook, {
@@ -331,7 +342,6 @@ export class AuthService {
       });
       return;
     }
-    // Dynamic import nodemailer only when SMTP configured
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const nodemailer = require('nodemailer') as {
@@ -345,10 +355,17 @@ export class AuthService {
         secure: process.env.AUTH_SMTP_SECURE === 'true',
         auth: { user, pass },
       });
-      await transport.sendMail({ from, to: email, subject, text, html: `<p>${text.replace(/\n/g, '<br/>')}</p>` });
+      await transport.sendMail({
+        from,
+        to: email,
+        subject,
+        text,
+        html: `<p>${text.replace(/\n/g, '<br/>')}</p>`,
+      });
     } catch {
-      // nodemailer not installed — webhook path preferred for ship
-      this.logger.warn('SMTP configured but nodemailer unavailable; set AUTH_EMAIL_WEBHOOK');
+      this.logger.warn(
+        'SMTP configured but nodemailer unavailable; set RESEND_API_KEY or AUTH_EMAIL_WEBHOOK',
+      );
     }
   }
 

@@ -129,7 +129,7 @@ export const ADMIN_SERVICE = {
     API(`${base}/platform/settings/site`, { method: 'PATCH', auth: true, body: JSON.stringify(data) }),
   reports: () => API(`${base}/platform/reports/summary`, { method: 'GET', auth: true }),
   submitPublic: (
-    kind: 'lead' | 'booking' | 'listing-report' | 'listing-review',
+    kind: 'lead' | 'booking' | 'listing-report' | 'listing-review' | 'newsletter',
     data: Record<string, unknown>,
   ) => API(`${base}/platform/public/${kind}`, { method: 'POST', body: JSON.stringify(data) }),
   listPublicContent: (kind: string, limit?: number) =>

@@ -31,6 +31,7 @@ import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { AuditModule } from '@modules/audit/audit.module';
 import { PlatformModule } from '@modules/platform/platform.module';
 import { RequestsModule } from '@modules/requests/requests.module';
+import { MailModule } from '@modules/mail/mail.module';
 import { isQueuesEnabled } from '@shared/queues-enabled';
 
 @Global()
@@ -109,6 +110,7 @@ const queuesOn = isQueuesEnabled();
     ThrottlerModule.forRoot({ throttlers: [config().throttle] }),
     AuditModule,
     LoggingModule,
+    MailModule,
     UserModule,
     AuthModule,
     WebhookModule,
