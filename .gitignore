@@ -1,0 +1,35 @@
+# Dependencies & builds
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+.vite/
+coverage/
+.nyc_output/
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Logs & OS
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE / tooling
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.sw?
+.vercel/
+.temp/
+.tmp/
+
+# Local scripts / noise
+temp_*.bat
+*.pid
+*.seed

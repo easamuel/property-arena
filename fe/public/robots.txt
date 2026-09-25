@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /create-property
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /edit-profile
+Disallow: /my-listing
+Disallow: /messages
+
+Sitemap: https://propertyarena.ng/sitemap.xml

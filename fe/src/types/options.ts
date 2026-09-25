@@ -1,0 +1,17 @@
+export const BEDROOM_OPTIONS = [
+  { label: '1 Bedroom', value: '1 Bedroom' },
+  { label: '2 Bedroom', value: '2 Bedroom' },
+  { label: '3 Bedroom', value: '3 Bedroom' },
+  { label: '4 Bedroom', value: '4 Bedroom' },
+  { label: '5 Bedroom', value: '5 Bedroom' },
+  { label: '6 Bedroom', value: '6 Bedroom' },
+  { label: '7 Bedroom', value: '7 Bedroom' },
+  { label: '8 Bedroom', value: '8 Bedroom' },
+  { label: '9 Bedroom', value: '9 Bedroom' },
+  { label: '10 Bedroom', value: '10 Bedroom' },
+  // { label: '1 Bedroom', value: '1 Bedroom' },
+  // { label: '1 Bedroom', value: '1 Bedroom' },
+  // { label: '1 Bedroom', value: '1 Bedroom' },
+  // { label: 'Sold', value: 'sold' },
+  // { label: 'Rented', value: 'rented' },
+];

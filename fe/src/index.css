@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+/* Class-based dark mode (theme toggle) — not prefers-color-scheme alone */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Semantic surfaces — Amazon/Meta style: one token set, both themes */
+:root {
+  --pa-bg: #ffffff;
+  --pa-bg-muted: #f4f6f4;
+  --pa-bg-elevated: #ffffff;
+  --pa-bg-nav: rgba(255, 255, 255, 0.92);
+  --pa-fg: #111827;
+  --pa-fg-secondary: #374151;
+  --pa-fg-muted: #6b7280;
+  --pa-border: #e5e7eb;
+  --pa-border-strong: #d1d5db;
+  --pa-ring: rgba(0, 0, 0, 0.06);
+  --pa-overlay: rgba(0, 0, 0, 0.45);
+  --pa-input: #ffffff;
+  --pa-input-border: #d1d5db;
+  --pa-chip: #f3f4f6;
+  --pa-success-soft: rgba(93, 187, 70, 0.12);
+  color-scheme: light;
+}
+
+html.dark {
+  --pa-bg: #0b100d;
+  --pa-bg-muted: #0f1410;
+  --pa-bg-elevated: #152018;
+  --pa-bg-nav: rgba(15, 20, 16, 0.92);
+  --pa-fg: #f0f4f1;
+  --pa-fg-secondary: #c5cfc8;
+  --pa-fg-muted: #9aab9f;
+  --pa-border: rgba(255, 255, 255, 0.1);
+  --pa-border-strong: rgba(255, 255, 255, 0.16);
+  --pa-ring: rgba(0, 0, 0, 0.35);
+  --pa-overlay: rgba(0, 0, 0, 0.55);
+  --pa-input: #121812;
+  --pa-input-border: rgba(255, 255, 255, 0.14);
+  --pa-chip: rgba(255, 255, 255, 0.08);
+  --pa-success-soft: rgba(93, 187, 70, 0.18);
+  color-scheme: dark;
+}
+
+@theme {
+  --color-primary-green: #28a745;
+  --color-primary-green-hover: #218838;
+  --color-primary-red: #b91c1c;
+  --color-admin-red: #b91c1c;
+  --color-admin-red-dark: #991b1b;
+  --color-secondary-red: #901a19;
+  --color-secondary-green: #9bcf9f;
+  --color-dark-blue: #21222d;
+  --color-sec-dark-blue: #171821;
+  --color-dark-orange: #cb974f;
+  --color-light-cyan: #a9dfd8;
+  --color-footer-green: #28a745;
+  --color-brand-green: #5dbb46;
+  --color-brand-green-dark: #4a9e36;
+  --color-brand-red: #c62828;
+
+  --color-surface: var(--pa-bg);
+  --color-surface-muted: var(--pa-bg-muted);
+  --color-surface-elevated: var(--pa-bg-elevated);
+  --color-surface-nav: var(--pa-bg-nav);
+  --color-ink: var(--pa-fg);
+  --color-ink-secondary: var(--pa-fg-secondary);
+  --color-ink-muted: var(--pa-fg-muted);
+  --color-line: var(--pa-border);
+  --color-line-strong: var(--pa-border-strong);
+  --color-field: var(--pa-input);
+  --color-field-border: var(--pa-input-border);
+  --color-chip: var(--pa-chip);
+
+  --font-sans: "Plus Jakarta Sans", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+html,
+body,
+#root {
+  font-family: var(--font-sans);
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--pa-bg);
+  color: var(--pa-fg);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Form controls follow theme without per-page dark: spam */
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+select,
+textarea {
+  background-color: var(--pa-input);
+  color: var(--pa-fg);
+  border-color: var(--pa-input-border);
+}
+
+.main-con-style {
+  @apply w-[80%] rounded-md bg-surface-elevated shadow-lg;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+  color: var(--color-primary-red) !important;
+}
+
+.admin-sidebar-link {
+  @apply flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm text-white/90 transition hover:bg-white/10;
+}
+.admin-sidebar-link.active {
+  @apply bg-white font-semibold text-admin-red;
+}

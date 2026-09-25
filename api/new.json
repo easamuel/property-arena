@@ -1,0 +1,31 @@
+{
+  "title": "Dolore ex ut dolore ",
+  "propertyType": "Sold",
+  "address": "Laborum consequatur",
+  "description": "Corporis earum conse",
+  "price": 14,
+  "oldPrice": 73,
+  "pricePrefixText": "Iste rerum delectus",
+  "pricePostfixText": "Aut incididunt modi ",
+  "propertyId": "Et fugiat veniam en",
+  "status": "Rented",
+  "landAreaPostfix": "28",
+  "garagesOrParkingSpaces": "Voluptatem aut est",
+  "landArea": "Dolores aliquid nesc",
+  "location": "Sold",
+  "bedroom": "Rented",
+  "media": [
+    {
+      "url": "https://res.cloudinary.com/dhhknhoo2/image/upload/v1751956131/property.jpg",
+      "type": "image",
+      "caption": "frontv"
+    }
+  ],
+  "features": [
+    "pool"
+  ],
+  "agentId": "",
+  "reviewNotes": "",
+  "agentDisplayOption": "none",
+  "selectedAgentId": ""
+}

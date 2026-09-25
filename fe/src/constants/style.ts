@@ -1,0 +1,1 @@
+export const MAIN_CONTAINER = 'main-con w-[80%] bg-white shadow-2xl rounded-md';
