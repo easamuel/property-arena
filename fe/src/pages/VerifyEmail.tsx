@@ -117,8 +117,8 @@ const VerifyEmail: React.FC = () => {
               <StatusIcon tone="info">
                 <Spinner className="h-7 w-7" />
               </StatusIcon>
-              <h2 className="text-2xl font-bold tracking-tight text-gray-900">Verifying your email…</h2>
-              <p className="mt-2 text-sm text-gray-600">This will only take a moment.</p>
+              <h2 className="text-2xl font-bold tracking-tight text-ink">Verifying your email…</h2>
+              <p className="mt-2 text-sm text-ink-muted">This will only take a moment.</p>
             </>
           )}
           {status === 'success' && (
@@ -126,8 +126,8 @@ const VerifyEmail: React.FC = () => {
               <StatusIcon tone="success">
                 <FiCheckCircle size={28} />
               </StatusIcon>
-              <h2 className="text-2xl font-bold tracking-tight text-gray-900">Email verified</h2>
-              <p className="mt-2 text-sm text-gray-600">
+              <h2 className="text-2xl font-bold tracking-tight text-ink">Email verified</h2>
+              <p className="mt-2 text-sm text-ink-muted">
                 Thanks for confirming your email. Your PropertyArena account is ready to go.
               </p>
               <AuthButton type="button" className="mt-6" onClick={() => navigate(continuePath, { replace: true })}>
@@ -140,10 +140,10 @@ const VerifyEmail: React.FC = () => {
               <StatusIcon tone="error">
                 <FiAlertTriangle size={28} />
               </StatusIcon>
-              <h2 className="text-2xl font-bold tracking-tight text-gray-900">Verification failed</h2>
-              <p className="mt-2 text-sm text-gray-600">{message}</p>
+              <h2 className="text-2xl font-bold tracking-tight text-ink">Verification failed</h2>
+              <p className="mt-2 text-sm text-ink-muted">{message}</p>
               <ResendPanel initialEmail={email || user?.email || ''} />
-              <Link to="/login" className="mt-4 inline-block text-sm font-medium text-gray-700 hover:underline">
+              <Link to="/login" className="mt-4 inline-block text-sm font-medium text-ink-secondary hover:underline">
                 Back to sign in
               </Link>
             </>
@@ -158,7 +158,7 @@ const VerifyEmail: React.FC = () => {
   return (
     <AuthLayout
       footer={
-        <Link to={accessToken ? continuePath : '/login'} className="font-semibold text-gray-700 hover:text-gray-900 hover:underline">
+        <Link to={accessToken ? continuePath : '/login'} className="font-semibold text-ink-secondary hover:text-ink hover:underline">
           {accessToken ? "I'll do this later" : 'Back to sign in'}
         </Link>
       }
@@ -167,20 +167,20 @@ const VerifyEmail: React.FC = () => {
         <StatusIcon tone="success">
           <FiMail size={28} />
         </StatusIcon>
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900">
+        <h2 className="text-2xl font-bold tracking-tight text-ink">
           {navState.justSignedUp ? 'Account created! Check your inbox' : 'Check your inbox'}
         </h2>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-ink-muted">
           We sent a verification link to{' '}
           {displayEmail ? (
-            <span className="font-semibold text-gray-900">{displayEmail}</span>
+            <span className="font-semibold text-ink">{displayEmail}</span>
           ) : (
             'your email address'
           )}
           . Click the link to confirm your account. It expires in 24 hours.
         </p>
         <ResendPanel initialEmail={displayEmail} initialDevLink={navState.devLink} />
-        <p className="mt-5 text-xs text-gray-500">Can&apos;t find it? Check your spam or promotions folder.</p>
+        <p className="mt-5 text-xs text-ink-muted">Can&apos;t find it? Check your spam or promotions folder.</p>
       </div>
     </AuthLayout>
   );

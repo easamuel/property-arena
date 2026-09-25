@@ -11,6 +11,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as express from 'express';
 import { ensureLocalInfra } from './local-infra';
 import { seedDevData } from './seed-dev';
+import { seedNationwideProperties } from './database/seeds/properties.seed';
 
 async function bootstrap() {
   await ensureLocalInfra();
@@ -66,7 +67,8 @@ async function bootstrap() {
   if (process.env.NODE_ENV !== 'production') {
     try {
       await seedDevData(app);
-      logger.log('Dev seed ready (admin + plans)');
+      await seedNationwideProperties(app);
+      logger.log('Dev seed ready (admin + plans + properties)');
     } catch (err) {
       logger.warn('Dev seed skipped: ' + (err as Error).message);
     }

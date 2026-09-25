@@ -21,6 +21,8 @@ import {
   FiMessageSquare,
   FiRepeat,
   FiBookOpen,
+  FiAlertTriangle,
+  FiStar,
 } from 'react-icons/fi';
 import { useAuthStore } from '@/store/authStore';
 import Logo from '@/components/brand/Logo';
@@ -33,6 +35,8 @@ const NAV_ITEMS = [
   { to: '/admin/agents', label: 'Agents', icon: FiUserCheck },
   { to: '/admin/developers', label: 'Developers', icon: FiBriefcase },
   { to: '/admin/leads', label: 'Leads & Enquiries', icon: FiMessageSquare },
+  { to: '/admin/listing-reports', label: 'Listing Reports', icon: FiAlertTriangle },
+  { to: '/admin/listing-reviews', label: 'Listing Reviews', icon: FiStar },
   { to: '/admin/bookings', label: 'Bookings & Inspections', icon: FiCalendar },
   { to: '/admin/transactions', label: 'Transactions', icon: FiRepeat },
   { to: '/admin/payments', label: 'Payments', icon: FiCreditCard },
@@ -42,6 +46,7 @@ const NAV_ITEMS = [
   { to: '/admin/reports', label: 'Reports & Analytics', icon: FiBarChart2 },
   { to: '/admin/pages', label: 'Pages Management', icon: FiFileText },
   { to: '/admin/articles', label: 'Articles & Guides', icon: FiBookOpen },
+  { to: '/admin/help', label: 'Help Center', icon: FiHelpCircle },
   { to: '/admin/settings', label: 'Settings', icon: FiSettings },
 ];
 
@@ -53,6 +58,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/agents': 'Agents',
   '/admin/developers': 'Developers',
   '/admin/leads': 'Leads & Enquiries',
+  '/admin/listing-reports': 'Listing Reports',
+  '/admin/listing-reviews': 'Listing Reviews',
   '/admin/bookings': 'Bookings & Inspections',
   '/admin/transactions': 'Transactions',
   '/admin/payments': 'Payments',
@@ -62,6 +69,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/reports': 'Reports & Analytics',
   '/admin/pages': 'Pages Management',
   '/admin/articles': 'Articles & Guides',
+  '/admin/help': 'Help Center',
   '/admin/blog': 'Blog Management',
   '/admin/settings': 'Settings',
 };

@@ -47,6 +47,48 @@ export class UserService {
     return { message: 'User role updated', data: updated };
   }
 
+  async setAgentVerified(id: string, isAgentVerified: boolean) {
+    const user = await this.findOne({ _id: id as any });
+    if (!user) {
+      throw new CustomHttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    if (user.role !== ROLE_ENUM.AGENT && user.role !== ROLE_ENUM.DEVELOPER) {
+      throw new CustomHttpException(
+        'Only agents and developers can receive a verification badge',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const updated = await this.userDAL.updateOne({ _id: id }, { isAgentVerified });
+    return {
+      message: isAgentVerified ? 'Agent verified' : 'Verification removed',
+      data: updated,
+    };
+  }
+
+  async getPublicAgent(id: string) {
+    const user = await this.findOne({ _id: id as any });
+    if (!user || user.isDeleted || user.isActive === false) {
+      throw new CustomHttpException('Agent not found', HttpStatus.NOT_FOUND);
+    }
+    if (user.role !== ROLE_ENUM.AGENT && user.role !== ROLE_ENUM.DEVELOPER) {
+      throw new CustomHttpException('Agent not found', HttpStatus.NOT_FOUND);
+    }
+    return {
+      message: 'Agent fetched',
+      data: {
+        id: (user as any)._id || (user as any).id,
+        name: user.displayName || user.name,
+        email: user.email,
+        phone: user.phone,
+        website: user.website,
+        avatarUrl: user.avatarUrl,
+        address: user.address,
+        role: user.role,
+        isAgentVerified: Boolean(user.isAgentVerified),
+      },
+    };
+  }
+
   async getMe(payload: AuthUser) {
     const user = await this.findOne({ _id: payload.id });
 

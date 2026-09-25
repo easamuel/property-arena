@@ -66,14 +66,48 @@ const CMS_ARTICLES = [
 /** Promotions: status must be Active/published for public AdSlot reads. */
 const CMS_PROMOS = [
   {
+    slug: 'home-banner-1',
+    title: 'Featured homes this week',
+    status: 'Active',
+    placement: 'homepage_banner',
+    ctaLabel: 'Browse for sale',
+    ctaUrl: '/for-sale/in/lagos',
+    imageUrl:
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=80',
+    body: 'Duplexes and apartments from verified agents.',
+  },
+  {
     slug: 'home-sidebar-1',
     title: 'List with PropertyArena',
     status: 'Active',
     placement: 'homepage_sidebar',
     ctaLabel: 'Post a property',
     ctaUrl: '/create-property',
-    imageUrl: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&auto=format&fit=crop',
+    imageUrl:
+      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=900&q=80',
     body: 'Reach serious buyers across Nigeria.',
+  },
+  {
+    slug: 'home-mid-1',
+    title: 'Arena Select agents',
+    status: 'Active',
+    placement: 'homepage_mid',
+    ctaLabel: 'See plans',
+    ctaUrl: '/subscription',
+    imageUrl:
+      'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=900&q=80',
+    body: 'Gold badge · priority ranking · more leads.',
+  },
+  {
+    slug: 'search-sidebar-1',
+    title: 'Land deals in Abule Egba',
+    status: 'Active',
+    placement: 'search_sidebar',
+    ctaLabel: 'View land',
+    ctaUrl: '/land/in/lagos/abule-egba',
+    imageUrl:
+      'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80',
+    body: 'Plots verified for title readiness.',
   },
   {
     slug: 'listing-sidebar-1',
@@ -82,8 +116,20 @@ const CMS_PROMOS = [
     placement: 'listing_sidebar',
     ctaLabel: 'Talk to us',
     ctaUrl: '/contact',
-    imageUrl: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&auto=format&fit=crop',
+    imageUrl:
+      'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=900&q=80',
     body: 'Partner lenders for qualified buyers.',
+  },
+  {
+    slug: 'requests-sidebar-1',
+    title: 'Agents: browse open requests',
+    status: 'Active',
+    placement: 'requests_sidebar',
+    ctaLabel: 'Open requests',
+    ctaUrl: '/requests',
+    imageUrl:
+      'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=900&q=80',
+    body: 'Respond to buyer briefs and win leads.',
   },
 ];
 

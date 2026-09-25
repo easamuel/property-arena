@@ -2,12 +2,12 @@ import React, { useId, useState } from 'react';
 import { FiAlertCircle, FiCheckCircle, FiEye, FiEyeOff, FiInfo } from 'react-icons/fi';
 
 const inputBase =
-  'block w-full rounded-xl border bg-white px-3.5 py-3 text-[15px] text-gray-900 placeholder:text-gray-400 shadow-sm transition focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:bg-gray-50';
+  'block w-full rounded-xl border bg-field px-3.5 py-3 text-[15px] text-ink placeholder:text-ink-muted shadow-sm transition focus:outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-60';
 
 const inputState = (hasError: boolean) =>
   hasError
-    ? 'border-red-400 focus:border-red-500 focus:ring-red-100'
-    : 'border-gray-300 hover:border-gray-400 focus:border-brand-green focus:ring-brand-green/20';
+    ? 'border-red-400 focus:border-red-500 focus:ring-red-500/20'
+    : 'border-field-border hover:border-line-strong focus:border-brand-green focus:ring-brand-green/20';
 
 interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -32,7 +32,7 @@ export const TextField: React.FC<TextFieldProps> = ({
   return (
     <div className={className}>
       <div className="mb-1.5 flex items-center justify-between">
-        <label htmlFor={inputId} className="text-sm font-medium text-gray-800">
+        <label htmlFor={inputId} className="text-sm font-medium text-ink">
           {label}
         </label>
         {labelAction}
@@ -71,7 +71,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
   return (
     <div className={className}>
       <div className="mb-1.5 flex items-center justify-between">
-        <label htmlFor={inputId} className="text-sm font-medium text-gray-800">
+        <label htmlFor={inputId} className="text-sm font-medium text-ink">
           {label}
         </label>
         {labelAction}
@@ -88,7 +88,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
-          className="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-xl text-gray-500 transition hover:text-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-green"
+          className="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-xl text-ink-muted transition hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-green"
           aria-label={visible ? 'Hide password' : 'Show password'}
           aria-pressed={visible}
           aria-controls={inputId}
@@ -117,7 +117,7 @@ const FieldMessage: React.FC<{ id: string; error?: string; hint?: React.ReactNod
   }
   if (hint) {
     return (
-      <p id={`${id}-hint`} className="mt-1.5 text-xs text-gray-500">
+      <p id={`${id}-hint`} className="mt-1.5 text-xs text-ink-muted">
         {hint}
       </p>
     );
@@ -172,12 +172,12 @@ export const PasswordStrengthMeter: React.FC<{ password: string }> = ({ password
           <span
             key={i}
             className={`h-1.5 flex-1 rounded-full transition-colors ${
-              score >= i ? STRENGTH_COLORS[score] : 'bg-gray-200'
+              score >= i ? STRENGTH_COLORS[score] : 'bg-chip'
             }`}
           />
         ))}
       </div>
-      <p className="mt-1.5 text-xs text-gray-600">
+      <p className="mt-1.5 text-xs text-ink-muted">
         Password strength:{' '}
         <span className={`font-semibold ${STRENGTH_TEXT[score]}`}>{STRENGTH_LABELS[score]}</span>
       </p>
@@ -185,7 +185,7 @@ export const PasswordStrengthMeter: React.FC<{ password: string }> = ({ password
         {rules.map((r) => (
           <li
             key={r.label}
-            className={`flex items-center gap-1.5 ${r.ok ? 'text-brand-green-dark' : 'text-gray-500'}`}
+            className={`flex items-center gap-1.5 ${r.ok ? 'text-brand-green' : 'text-ink-muted'}`}
           >
             <FiCheckCircle aria-hidden className={r.ok ? '' : 'opacity-40'} />
             <span>
@@ -225,7 +225,7 @@ export const AuthButton: React.FC<SubmitButtonProps> = ({
   const styles =
     variant === 'primary'
       ? 'bg-brand-green text-white shadow-md shadow-brand-green/25 hover:bg-brand-green-dark focus-visible:ring-brand-green/40'
-      : 'bg-white text-gray-800 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus-visible:ring-gray-300';
+      : 'bg-surface-elevated text-ink ring-1 ring-inset ring-line hover:bg-chip focus-visible:ring-line';
   return (
     <button
       type={type}
@@ -245,9 +245,18 @@ export const AlertBanner: React.FC<{
   children: React.ReactNode;
 }> = ({ tone = 'error', children }) => {
   const map = {
-    error: { cls: 'bg-red-50 text-red-800 ring-red-200', Icon: FiAlertCircle },
-    success: { cls: 'bg-green-50 text-green-800 ring-green-200', Icon: FiCheckCircle },
-    info: { cls: 'bg-sky-50 text-sky-800 ring-sky-200', Icon: FiInfo },
+    error: {
+      cls: 'bg-red-50 text-red-800 ring-red-200 dark:bg-red-500/15 dark:text-red-200 dark:ring-red-500/30',
+      Icon: FiAlertCircle,
+    },
+    success: {
+      cls: 'bg-green-50 text-green-800 ring-green-200 dark:bg-brand-green/15 dark:text-brand-green dark:ring-brand-green/30',
+      Icon: FiCheckCircle,
+    },
+    info: {
+      cls: 'bg-sky-50 text-sky-800 ring-sky-200 dark:bg-sky-500/15 dark:text-sky-200 dark:ring-sky-500/30',
+      Icon: FiInfo,
+    },
   }[tone];
   const { Icon } = map;
   return (
@@ -279,9 +288,9 @@ export const StatusIcon: React.FC<{ tone: 'success' | 'error' | 'info'; children
   children,
 }) => {
   const cls = {
-    success: 'bg-brand-green/10 text-brand-green-dark ring-brand-green/25',
-    error: 'bg-red-50 text-brand-red ring-red-200',
-    info: 'bg-sky-50 text-sky-700 ring-sky-200',
+    success: 'bg-brand-green/10 text-brand-green ring-brand-green/25',
+    error: 'bg-red-50 text-brand-red ring-red-200 dark:bg-red-500/15 dark:ring-red-500/30',
+    info: 'bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-500/15 dark:text-sky-200 dark:ring-sky-500/30',
   }[tone];
   return (
     <div

@@ -6,10 +6,12 @@ import SiteFooter from '@/components/footer/SiteFooter';
 import SeoHead from '@/components/seo/SeoHead';
 import { guideMapBySlug } from '@/data/guide';
 import { buildSeoPath } from '@/lib/seo';
+import { GUIDE_TOPICS, getGuideInsights, type GuideTopic } from '@/lib/guideInsights';
 
 const NeighbourhoodDetails = () => {
   const { slug, areaSlug } = useParams<{ slug?: string; areaSlug?: string }>();
   const [areaQuery, setAreaQuery] = useState('');
+  const [activeTopic, setActiveTopic] = useState<GuideTopic>('Lifestyle');
 
   const city = slug ? guideMapBySlug[slug] : undefined;
   const area = areaSlug ? city?.subLocations?.find((s) => s.slug === areaSlug) : undefined;
@@ -69,6 +71,8 @@ const NeighbourhoodDetails = () => {
   const description = area?.description || city.description;
   const listingQuery = encodeURIComponent(area?.name || city.location);
   const seoState = city.location === 'Rivers' ? 'Rivers' : city.location;
+  const insights = getGuideInsights(title, city.location);
+  const topicBody = insights[activeTopic];
 
   return (
     <div className="min-h-screen bg-surface-muted">
@@ -115,15 +119,31 @@ const NeighbourhoodDetails = () => {
             {description}
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-2">
-            {['Lifestyle', 'Access', 'Schools', 'Security'].map((chip) => (
-              <span
-                key={chip}
-                className="rounded-full border border-line bg-chip px-3 py-1.5 text-xs font-semibold text-ink-secondary"
-              >
-                {chip}
-              </span>
-            ))}
+          <div className="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Guide topics">
+            {GUIDE_TOPICS.map((topic) => {
+              const selected = activeTopic === topic;
+              return (
+                <button
+                  key={topic}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  onClick={() => setActiveTopic(topic)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                    selected
+                      ? 'bg-brand-green text-white'
+                      : 'border border-line bg-chip text-ink-secondary hover:border-brand-green/40 hover:text-brand-green'
+                  }`}
+                >
+                  {topic}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-5 rounded-xl bg-surface p-4 ring-1 ring-line sm:p-5" role="tabpanel">
+            <h3 className="text-sm font-bold text-ink">{activeTopic} in {title}</h3>
+            <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-ink-secondary">{topicBody}</p>
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">

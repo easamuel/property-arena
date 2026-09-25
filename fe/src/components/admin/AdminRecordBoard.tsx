@@ -68,19 +68,37 @@ export function AdminRecordBoard({
       {note && <p className="text-sm text-gray-600">{note}</p>}
       {error && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
       <form onSubmit={onCreate} className="grid gap-2 rounded-xl bg-white p-4 shadow-sm md:grid-cols-4">
-        {fields.map((field) =>
-          field.options ? (
-            <select
-              key={field.key}
-              className="rounded border px-3 py-2 text-sm"
-              value={form[field.key] || field.options[0]}
-              onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
-            >
-              {field.options.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </select>
-          ) : (
+        {fields.map((field) => {
+          const useTextarea =
+            field.key === 'body' || /body/i.test(field.label);
+          if (field.options) {
+            return (
+              <select
+                key={field.key}
+                className="rounded border px-3 py-2 text-sm"
+                value={form[field.key] || field.options[0]}
+                onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+              >
+                {field.options.map((option) => (
+                  <option key={option}>{option}</option>
+                ))}
+              </select>
+            );
+          }
+          if (useTextarea) {
+            return (
+              <textarea
+                key={field.key}
+                required={!field.optional && field.key !== 'notes'}
+                placeholder={field.label}
+                rows={6}
+                className="rounded border px-3 py-2 text-sm md:col-span-4"
+                value={form[field.key] || ''}
+                onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
+              />
+            );
+          }
+          return (
             <input
               key={field.key}
               required={!field.optional && field.key !== 'notes'}
@@ -89,8 +107,8 @@ export function AdminRecordBoard({
               value={form[field.key] || ''}
               onChange={(e) => setForm({ ...form, [field.key]: e.target.value })}
             />
-          ),
-        )}
+          );
+        })}
         <button type="submit" className="rounded bg-admin-red px-4 py-2 text-sm font-semibold text-white">
           Add
         </button>

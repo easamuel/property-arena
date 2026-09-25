@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/useToast';
 const BackToLogin: React.FC = () => (
   <Link
     to="/login"
-    className="inline-flex items-center gap-1.5 rounded font-semibold text-gray-700 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-green"
+    className="inline-flex items-center gap-1.5 rounded font-semibold text-ink-secondary hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-green"
   >
     <FiArrowLeft aria-hidden /> Back to sign in
   </Link>
@@ -81,9 +81,9 @@ const ForgotPassword: React.FC = () => {
           <StatusIcon tone="success">
             <FiMail size={28} />
           </StatusIcon>
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900">Check your email</h2>
-          <p className="mt-2 text-sm text-gray-600">
-            If an account exists for <span className="font-semibold text-gray-900">{email.trim()}</span>,
+          <h2 className="text-2xl font-bold tracking-tight text-ink">Check your email</h2>
+          <p className="mt-2 text-sm text-ink-muted">
+            If an account exists for <span className="font-semibold text-ink">{email.trim()}</span>,
             you&apos;ll receive a link to reset your password. The link expires in 1 hour.
           </p>
           <div className="mt-6 space-y-3">
@@ -98,7 +98,7 @@ const ForgotPassword: React.FC = () => {
               Use a different email
             </button>
           </div>
-          <p className="mt-5 text-xs text-gray-500">Didn&apos;t get it? Check your spam or promotions folder.</p>
+          <p className="mt-5 text-xs text-ink-muted">Didn&apos;t get it? Check your spam or promotions folder.</p>
           <DevLinkBox link={devLink} />
         </div>
       </AuthLayout>

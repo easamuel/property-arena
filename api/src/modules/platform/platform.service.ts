@@ -7,9 +7,27 @@ import { UserService } from '@modules/user/user.service';
 import { PropertyDAL } from '@modules/property/dals/property.dal';
 import { PlatformRecord, PlatformRecordDocument } from './schemas/platform-record.schema';
 
-const PUBLIC_KINDS = new Set(['lead', 'booking']);
-const ADMIN_KINDS = new Set(['lead', 'booking', 'page', 'promotion', 'media', 'article']);
-const PUBLIC_READ_KINDS = new Set(['article', 'promotion', 'page']);
+const PUBLIC_KINDS = new Set(['lead', 'booking', 'listing-report', 'listing-review']);
+const ADMIN_KINDS = new Set([
+  'lead',
+  'booking',
+  'page',
+  'promotion',
+  'media',
+  'article',
+  'help-faq',
+  'agent-profile',
+  'listing-report',
+  'listing-review',
+]);
+const PUBLIC_READ_KINDS = new Set([
+  'article',
+  'promotion',
+  'page',
+  'help-faq',
+  'agent-profile',
+  'listing-review',
+]);
 const PUBLISHED_STATUS = /^(published|active)$/i;
 
 @Injectable()

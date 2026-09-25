@@ -37,6 +37,20 @@ export class UserController {
     return this.userService.setUserRole(id, body.role);
   }
 
+  @UseGuards(AdminGuard)
+  @Patch(':id/verify-agent')
+  setAgentVerified(
+    @Param('id') id: string,
+    @Body() body: { isAgentVerified: boolean },
+  ) {
+    return this.userService.setAgentVerified(id, Boolean(body.isAgentVerified));
+  }
+
+  @Get('agents/:id')
+  getPublicAgent(@Param('id') id: string) {
+    return this.userService.getPublicAgent(id);
+  }
+
   @Get('/me')
   getUser(@CurrentUser() user: AuthUser) {
     return this.userService.getMe(user);

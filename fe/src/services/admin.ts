@@ -11,6 +11,11 @@ export type AdminUser = {
   phone?: string;
   role: string;
   isActive?: boolean;
+  isAgentVerified?: boolean;
+  website?: string;
+  avatarUrl?: string;
+  address?: string;
+  displayName?: string;
   createdAt?: string;
   lastLoggedIn?: string;
 };
@@ -66,6 +71,14 @@ export const ADMIN_SERVICE = {
       auth: true,
       body: JSON.stringify({ role }),
     }),
+  setAgentVerified: (id: string, isAgentVerified: boolean) =>
+    API(`${base}/users/${id}/verify-agent`, {
+      method: 'PATCH',
+      auth: true,
+      body: JSON.stringify({ isAgentVerified }),
+    }),
+  getPublicAgent: (id: string) =>
+    API(`${base}/users/agents/${encodeURIComponent(id)}`, { method: 'GET' }),
   listProperties: (page = 1) =>
     API(`${base}/properties?page=${page}&limit=20`, { method: 'GET' }),
   moderateProperty: (id: string, body: { status?: string; reviewNotes?: string }) =>
@@ -115,8 +128,10 @@ export const ADMIN_SERVICE = {
   saveSettings: (data: Record<string, unknown>) =>
     API(`${base}/platform/settings/site`, { method: 'PATCH', auth: true, body: JSON.stringify(data) }),
   reports: () => API(`${base}/platform/reports/summary`, { method: 'GET', auth: true }),
-  submitPublic: (kind: 'lead' | 'booking', data: Record<string, unknown>) =>
-    API(`${base}/platform/public/${kind}`, { method: 'POST', body: JSON.stringify(data) }),
+  submitPublic: (
+    kind: 'lead' | 'booking' | 'listing-report' | 'listing-review',
+    data: Record<string, unknown>,
+  ) => API(`${base}/platform/public/${kind}`, { method: 'POST', body: JSON.stringify(data) }),
   listPublicContent: (kind: string, limit?: number) =>
     API(
       `${base}/platform/content/${kind}${limit ? `?limit=${limit}` : ''}`,

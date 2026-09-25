@@ -1,55 +1,107 @@
-import { FormEvent, useState } from 'react';
-import { FiCheck, FiMapPin } from 'react-icons/fi';
-import { FaStar } from 'react-icons/fa';
+import { FormEvent, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { FiCheck, FiArrowRight, FiArrowLeft } from 'react-icons/fi';
+import { FaHome, FaKey, FaBed, FaMap } from 'react-icons/fa';
 import MarketplaceHeader from '@/components/navbar/MarketplaceHeader';
 import SiteFooter from '@/components/footer/SiteFooter';
+import SeoHead from '@/components/seo/SeoHead';
+import SafetyTips from '@/components/trust/SafetyTips';
+import AdSlot from '@/components/ads/AdSlot';
 import { useToast } from '@/hooks/useToast';
 import { REQUESTS_SERVICE } from '@/services/requests';
 
-const STEPS = ['Your Requirements', 'Your Details', 'Review & Submit'];
+const STEPS = ['What you need', 'Budget & place', 'Contact', 'Review'];
+
+const PURPOSES = [
+  { id: 'sale' as const, label: 'Buy', icon: FaHome, hint: 'Own a home or land' },
+  { id: 'rent' as const, label: 'Rent', icon: FaKey, hint: 'Long-term lease' },
+  { id: 'shortlet' as const, label: 'Short let', icon: FaBed, hint: 'Days or months' },
+  { id: 'lease' as const, label: 'Land / lease', icon: FaMap, hint: 'Plots & commercial' },
+];
+
+const TYPES = [
+  'Duplex',
+  'Apartment / Flat',
+  'Terrace',
+  'Bungalow',
+  'Mini flat',
+  'Self contain',
+  'Penthouse',
+  'Land',
+  'Commercial',
+  'Office',
+];
 
 const FEATURES = [
-  'Swimming Pool',
-  'Parking Space',
-  '24/7 Security',
+  'Serviced',
   'Furnished',
-  'Serviced Apartment',
+  'Newly built',
+  'Parking',
+  '24/7 Security',
+  'BQ',
+  'Pool',
   'Gym',
   'Elevator',
   'Garden',
-  'Study Room',
-  'Other',
 ];
-
-const HERO =
-  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&auto=format&fit=crop';
 
 const RequestProperty = () => {
   const toast = useToast();
   const [step, setStep] = useState(0);
   const [purpose, setPurpose] = useState<'sale' | 'rent' | 'shortlet' | 'lease'>('sale');
   const [features, setFeatures] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
-    propertyType: '',
-    location: 'Lekki, Lagos',
+    propertyType: 'Duplex',
+    location: '',
     budgetMin: '',
     budgetMax: '',
-    bedrooms: '',
+    bedrooms: '3',
     name: '',
     email: '',
     phone: '',
     notes: '',
   });
 
+  const preview = useMemo(() => {
+    const purposeLabel = PURPOSES.find((p) => p.id === purpose)?.label || purpose;
+    const budget =
+      form.budgetMin || form.budgetMax
+        ? `₦${form.budgetMin || '0'} – ₦${form.budgetMax || 'open'}`
+        : 'Budget flexible';
+    return {
+      title: `${purposeLabel}: ${form.propertyType || 'Property'}`,
+      location: form.location || 'Location to be confirmed',
+      beds: form.bedrooms ? `${form.bedrooms} bed` : 'Any beds',
+      budget,
+      features: features.slice(0, 4),
+    };
+  }, [purpose, form, features]);
+
   const toggleFeature = (f: string) => {
     setFeatures((prev) => (prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]));
   };
 
-  const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  const canNext = () => {
+    if (step === 0) return !!form.propertyType && !!purpose;
+    if (step === 1) return form.location.trim().length > 2;
+    if (step === 2) return form.name.trim() && form.email.trim() && form.phone.trim();
+    return true;
+  };
+
+  const next = () => {
+    if (!canNext()) {
+      toast.error('Please complete this step before continuing');
+      return;
+    }
+    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+  };
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!canNext()) return;
+    setSubmitting(true);
     try {
       await REQUESTS_SERVICE.create({
         purpose,
@@ -67,257 +119,300 @@ const RequestProperty = () => {
         contactEmail: form.email,
         contactPhone: form.phone,
       });
-      toast.success('Property request submitted. Agents can now view and respond.');
+      toast.success('Request posted — verified agents can respond.');
       setStep(0);
+      setFeatures([]);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not submit request');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-surface-muted">
+      <SeoHead
+        title="Request a Property"
+        description="Tell PropertyArena agents what you want to buy, rent or short-let. Post once — free for buyers and tenants — and get matched responses."
+        path="/request-property"
+      />
       <MarketplaceHeader />
 
-      <section className="relative overflow-hidden py-16 text-white sm:py-20">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${HERO}')` }} />
-        <div className="absolute inset-0 bg-[#0E1A17]/80" />
-        <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6">
-          <p className="text-sm font-semibold uppercase tracking-wide text-primary-green">Request a Property</p>
-          <h1 className="mt-2 text-3xl font-extrabold md:text-4xl">Let Us Find the Right Property for You</h1>
-          <p className="mx-auto mt-3 max-w-xl text-sm text-white/75">
-            Tell us what you need and our verified agents will match you with off-market and listed opportunities.
+      <section className="border-b border-line bg-surface-elevated">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+          <p className="text-xs font-bold uppercase tracking-wider text-brand-green">Property request</p>
+          <h1 className="mt-2 max-w-2xl text-3xl font-extrabold text-ink sm:text-4xl">
+            Tell agents exactly what you want
+          </h1>
+          <p className="mt-2 max-w-xl text-sm text-ink-muted">
+            Describe your budget, location and bedrooms. Verified agents browse open requests and reply with matching
+            homes — including options that may not be listed yet. Free for buyers and tenants.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm">
-            {['100% Free Service', 'Expert Property Match', 'Access Off-Market Properties'].map((t) => (
-              <span key={t} className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-green/20 text-primary-green">
-                  <FiCheck />
-                </span>
-                {t}
-              </span>
-            ))}
-          </div>
         </div>
       </section>
 
-      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <div className="mb-6 flex flex-wrap justify-center gap-2">
-          {STEPS.map((s, i) => (
-            <div
-              key={s}
-              className={`flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${
-                i === step ? 'bg-primary-green text-white' : 'border border-gray-200 bg-white text-gray-500'
-              }`}
-            >
-              <span className="font-bold">{i + 1}</span> {s}
-            </div>
-          ))}
-        </div>
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_320px] lg:px-8">
+        <div>
+          <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+            {STEPS.map((s, i) => (
+              <div
+                key={s}
+                className={`flex min-w-fit items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                  i === step
+                    ? 'bg-brand-green text-white'
+                    : i < step
+                      ? 'bg-brand-green/15 text-brand-green'
+                      : 'bg-chip text-ink-muted'
+                }`}
+              >
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-black/10 text-[10px]">
+                  {i < step ? <FiCheck /> : i + 1}
+                </span>
+                {s}
+              </div>
+            ))}
+          </div>
 
-        <form onSubmit={submit} className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm md:p-8">
-          {step === 0 && (
-            <div className="space-y-5">
-              <div>
-                <label className="mb-2 block text-sm font-medium">I want to *</label>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { id: 'sale' as const, label: 'Buy' },
-                    { id: 'rent' as const, label: 'Rent' },
-                    { id: 'shortlet' as const, label: 'Short Let' },
-                    { id: 'lease' as const, label: 'Lease' },
-                  ].map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setPurpose(p.id)}
-                      className={`rounded-lg px-5 py-2 text-sm font-semibold ${
-                        purpose === p.id ? 'bg-primary-green text-white' : 'border border-gray-200'
-                      }`}
-                    >
-                      {p.label}
-                    </button>
-                  ))}
+          <form onSubmit={submit} className="rounded-3xl bg-surface-elevated p-5 shadow-sm ring-1 ring-line sm:p-8">
+            {step === 0 && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-lg font-bold text-ink">What are you looking for?</h2>
+                  <p className="mt-1 text-sm text-ink-muted">Pick a purpose — this shapes how agents respond.</p>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    {PURPOSES.map(({ id, label, icon: Icon, hint }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setPurpose(id)}
+                        className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition ${
+                          purpose === id
+                            ? 'border-brand-green bg-brand-green/5 ring-2 ring-brand-green/30'
+                            : 'border-line hover:border-brand-green/40'
+                        }`}
+                      >
+                        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-green/10 text-brand-green">
+                          <Icon />
+                        </span>
+                        <span>
+                          <span className="block font-bold text-ink">{label}</span>
+                          <span className="text-xs text-ink-muted">{hint}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-ink">Property type</label>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {TYPES.map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setForm({ ...form, propertyType: t })}
+                        className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                          form.propertyType === t
+                            ? 'bg-ink text-surface'
+                            : 'bg-chip text-ink-secondary hover:bg-brand-green/10'
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-semibold text-ink">Must-haves</label>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {FEATURES.map((f) => (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => toggleFeature(f)}
+                        className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                          features.includes(f)
+                            ? 'bg-brand-green text-white'
+                            : 'border border-line text-ink-secondary'
+                        }`}
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <label className="block text-sm">
-                <span className="mb-1 block font-medium">Property Type *</span>
-                <select
-                  value={form.propertyType}
-                  onChange={(e) => setForm({ ...form, propertyType: e.target.value })}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5"
-                  required
-                >
-                  <option value="">Select type</option>
-                  <option>Duplex</option>
-                  <option>Apartment</option>
-                  <option>Bungalow</option>
-                  <option>Land</option>
-                </select>
-              </label>
-              <label className="block text-sm">
-                <span className="mb-1 block font-medium">Preferred Location *</span>
-                <div className="relative">
-                  <FiMapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-primary-red" />
+            )}
+
+            {step === 1 && (
+              <div className="space-y-5">
+                <h2 className="text-lg font-bold text-ink">Where and how much?</h2>
+                <label className="block text-sm font-semibold text-ink">
+                  Preferred location(s)
                   <input
                     value={form.location}
                     onChange={(e) => setForm({ ...form, location: e.target.value })}
-                    className="w-full rounded-lg border border-gray-200 py-2.5 pl-9 pr-3"
+                    placeholder="e.g. Lekki Phase 1, Ajah, Gwarinpa"
+                    className="mt-1.5 w-full rounded-xl border border-field-border bg-field px-4 py-3 text-sm outline-none focus:border-brand-green"
                     required
                   />
+                </label>
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <label className="text-sm font-semibold text-ink">
+                    Bedrooms
+                    <select
+                      value={form.bedrooms}
+                      onChange={(e) => setForm({ ...form, bedrooms: e.target.value })}
+                      className="mt-1.5 w-full rounded-xl border border-field-border bg-field px-3 py-3 text-sm"
+                    >
+                      <option value="">Any</option>
+                      {[1, 2, 3, 4, 5, 6].map((n) => (
+                        <option key={n} value={String(n)}>
+                          {n}+
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="text-sm font-semibold text-ink">
+                    Min budget (₦)
+                    <input
+                      value={form.budgetMin}
+                      onChange={(e) => setForm({ ...form, budgetMin: e.target.value })}
+                      inputMode="numeric"
+                      placeholder="10000000"
+                      className="mt-1.5 w-full rounded-xl border border-field-border bg-field px-3 py-3 text-sm"
+                    />
+                  </label>
+                  <label className="text-sm font-semibold text-ink">
+                    Max budget (₦)
+                    <input
+                      value={form.budgetMax}
+                      onChange={(e) => setForm({ ...form, budgetMax: e.target.value })}
+                      inputMode="numeric"
+                      placeholder="150000000"
+                      className="mt-1.5 w-full rounded-xl border border-field-border bg-field px-3 py-3 text-sm"
+                    />
+                  </label>
                 </div>
-              </label>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <label className="block text-sm">
-                  <span className="mb-1 block font-medium">Min Budget</span>
-                  <input
-                    value={form.budgetMin}
-                    onChange={(e) => setForm({ ...form, budgetMin: e.target.value })}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5"
-                    placeholder="₦"
+                <label className="block text-sm font-semibold text-ink">
+                  Extra notes
+                  <textarea
+                    value={form.notes}
+                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    rows={3}
+                    placeholder="Estate preference, title needs, move-in date…"
+                    className="mt-1.5 w-full rounded-xl border border-field-border bg-field px-4 py-3 text-sm"
                   />
                 </label>
-                <label className="block text-sm">
-                  <span className="mb-1 block font-medium">Max Budget</span>
-                  <input
-                    value={form.budgetMax}
-                    onChange={(e) => setForm({ ...form, budgetMax: e.target.value })}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5"
-                    placeholder="₦"
-                  />
-                </label>
-                <label className="block text-sm">
-                  <span className="mb-1 block font-medium">Bedrooms</span>
-                  <select
-                    value={form.bedrooms}
-                    onChange={(e) => setForm({ ...form, bedrooms: e.target.value })}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5"
-                  >
-                    <option value="">Any</option>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <option key={n}>{n}+</option>
-                    ))}
-                  </select>
-                </label>
               </div>
-              <div>
-                <span className="mb-2 block text-sm font-medium">Must-have Features</span>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {FEATURES.map((f) => (
-                    <label key={f} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={features.includes(f)}
-                        onChange={() => toggleFeature(f)}
-                        className="rounded text-primary-green"
-                      />
-                      {f}
-                    </label>
-                  ))}
-                </div>
+            )}
+
+            {step === 2 && (
+              <div className="space-y-4">
+                <h2 className="text-lg font-bold text-ink">How agents reach you</h2>
+                <p className="text-sm text-ink-muted">Shared only with agents who respond to this request.</p>
+                {(['name', 'email', 'phone'] as const).map((key) => (
+                  <label key={key} className="block text-sm font-semibold text-ink">
+                    {key === 'name' ? 'Full name' : key === 'email' ? 'Email' : 'Phone / WhatsApp'}
+                    <input
+                      required
+                      type={key === 'email' ? 'email' : 'text'}
+                      value={form[key]}
+                      onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                      className="mt-1.5 w-full rounded-xl border border-field-border bg-field px-4 py-3 text-sm"
+                    />
+                  </label>
+                ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {step === 1 && (
-            <div className="space-y-4">
-              <label className="block text-sm">
-                <span className="mb-1 block font-medium">Full Name *</span>
-                <input
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5"
-                  required
-                />
-              </label>
-              <label className="block text-sm">
-                <span className="mb-1 block font-medium">Email *</span>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5"
-                  required
-                />
-              </label>
-              <label className="block text-sm">
-                <span className="mb-1 block font-medium">Phone *</span>
-                <input
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5"
-                  required
-                />
-              </label>
-              <label className="block text-sm">
-                <span className="mb-1 block font-medium">Additional Notes</span>
-                <textarea
-                  rows={4}
-                  value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5"
-                />
-              </label>
-            </div>
-          )}
+            {step === 3 && (
+              <div className="space-y-4">
+                <h2 className="text-lg font-bold text-ink">Review your brief</h2>
+                <dl className="space-y-3 rounded-2xl bg-chip p-4 text-sm">
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-ink-muted">Purpose</dt>
+                    <dd className="font-semibold text-ink">{preview.title}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-ink-muted">Location</dt>
+                    <dd className="text-right font-semibold text-ink">{preview.location}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-ink-muted">Beds / budget</dt>
+                    <dd className="font-semibold text-ink">
+                      {preview.beds} · {preview.budget}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-ink-muted">Contact</dt>
+                    <dd className="text-right font-semibold text-ink">
+                      {form.name}
+                      <br />
+                      {form.email}
+                    </dd>
+                  </div>
+                </dl>
+                <SafetyTips compact />
+              </div>
+            )}
 
-          {step === 2 && (
-            <div className="space-y-3 rounded-xl bg-gray-50 p-4 text-sm text-gray-700">
-              <p><span className="font-semibold">Purpose:</span> {purpose}</p>
-              <p><span className="font-semibold">Type:</span> {form.propertyType || '—'}</p>
-              <p><span className="font-semibold">Location:</span> {form.location}</p>
-              <p>
-                <span className="font-semibold">Budget:</span> {form.budgetMin || '—'} – {form.budgetMax || '—'}
-              </p>
-              <p><span className="font-semibold">Contact:</span> {form.name} · {form.email} · {form.phone}</p>
-              <p><span className="font-semibold">Features:</span> {features.join(', ') || 'None'}</p>
-            </div>
-          )}
-
-          <div className="mt-8 flex flex-wrap justify-between gap-4 border-t pt-6">
-            <button type="button" onClick={back} disabled={step === 0} className="text-sm text-gray-500 disabled:opacity-40">
-              ← Back
-            </button>
-            {step < STEPS.length - 1 ? (
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
               <button
                 type="button"
-                onClick={next}
-                className="rounded-lg bg-primary-green px-6 py-3 text-sm font-semibold text-white hover:bg-primary-green-hover"
+                onClick={back}
+                disabled={step === 0}
+                className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-ink-secondary disabled:opacity-40"
               >
-                Continue →
+                <FiArrowLeft /> Back
               </button>
-            ) : (
-              <button
-                type="submit"
-                className="rounded-lg bg-primary-green px-6 py-3 text-sm font-semibold text-white hover:bg-primary-green-hover"
-              >
-                Submit Request
-              </button>
-            )}
-          </div>
-        </form>
-
-        <section className="mt-12 grid gap-6 sm:grid-cols-2">
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-            <h3 className="font-bold text-gray-900">How it works</h3>
-            <ol className="mt-4 space-y-3 text-sm text-gray-600">
-              <li className="flex gap-2"><span className="font-bold text-primary-green">1.</span> Share your requirements</li>
-              <li className="flex gap-2"><span className="font-bold text-primary-green">2.</span> We match verified agents</li>
-              <li className="flex gap-2"><span className="font-bold text-primary-green">3.</span> Tour and close with confidence</li>
-            </ol>
-          </div>
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-            <h3 className="font-bold text-gray-900">Client love</h3>
-            <div className="mt-2 flex gap-1 text-amber-400 text-sm">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <FaStar key={i} />
-              ))}
+              {step < STEPS.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={next}
+                  className="inline-flex items-center gap-2 rounded-xl bg-brand-green px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-green-dark"
+                >
+                  Continue <FiArrowRight />
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="inline-flex items-center gap-2 rounded-xl bg-brand-green px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-green-dark disabled:opacity-60"
+                >
+                  {submitting ? 'Posting…' : 'Post request'}
+                </button>
+              )}
             </div>
-            <p className="mt-3 text-sm text-gray-600">
-              “Requested a 3-bed in Ikoyi and got three solid options the next day.”
+          </form>
+        </div>
+
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+          <div className="rounded-3xl bg-surface-elevated p-5 shadow-sm ring-1 ring-line">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-ink-muted">Live preview</p>
+            <h3 className="mt-2 text-lg font-bold text-ink">{preview.title}</h3>
+            <p className="mt-1 text-sm text-ink-secondary">{preview.location}</p>
+            <p className="mt-3 text-sm font-semibold text-brand-green">
+              {preview.beds} · {preview.budget}
             </p>
-            <p className="mt-2 text-xs font-semibold">— Ibrahim M.</p>
+            {preview.features.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {preview.features.map((f) => (
+                  <span key={f} className="rounded-full bg-chip px-2 py-0.5 text-[10px] font-semibold text-ink-muted">
+                    {f}
+                  </span>
+                ))}
+              </div>
+            )}
+            <p className="mt-4 text-xs text-ink-muted">
+              Agents see this card on{' '}
+              <Link to="/requests" className="font-semibold text-brand-green hover:underline">
+                Browse requests
+              </Link>
+              .
+            </p>
           </div>
-        </section>
+          <AdSlot placement="requests_sidebar" />
+        </aside>
       </div>
 
       <SiteFooter />

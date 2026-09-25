@@ -14,6 +14,14 @@ const CUSTOM_HEADER_EXACT = new Set([
   '/messages',
   '/articles',
   '/neighbourhood',
+  '/about',
+  '/careers',
+  '/contact',
+  '/help',
+  '/terms',
+  '/privacy',
+  '/cookies',
+  '/sold-properties',
 ]);
 
 const hasCustomHeader = (pathname: string) => {
@@ -27,6 +35,7 @@ const hasCustomHeader = (pathname: string) => {
   if (pathname.startsWith('/for-rent/')) return true;
   if (pathname.startsWith('/shortlet/')) return true;
   if (pathname.startsWith('/land/')) return true;
+  if (pathname.startsWith('/pages/')) return true;
   return false;
 };
 
@@ -38,7 +47,7 @@ const UserLayout: React.FC<MainLayoutProps> = ({ children }) => {
     <div className="flex min-h-screen">
       <div className="flex w-full flex-col">
         {!customHeader && <MarketplaceHeader />}
-        <main className="flex-1 overflow-y-auto bg-gray-50">{children}</main>
+        <main className="flex-1 bg-surface-muted">{children}</main>
       </div>
     </div>
   );

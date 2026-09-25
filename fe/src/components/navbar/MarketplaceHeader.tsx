@@ -26,17 +26,17 @@ const NAV: NavItem[] = [
       {
         title: 'Homes',
         links: [
-          { label: 'All for sale', to: '/for-sale/in/lagos', hint: 'Browse Lagos' },
-          { label: 'New homes', to: '/for-sale/in/lagos', hint: 'Fresh developments' },
+          { label: 'All for sale', to: '/properties?purpose=sale&location=Nigeria', hint: 'Nationwide' },
+          { label: 'New homes', to: '/properties?purpose=sale&location=Nigeria', hint: 'Fresh developments' },
           { label: 'Luxury', to: '/properties?purpose=sale&minPrice=100000000', hint: '₦100M+' },
         ],
       },
       {
         title: 'By type',
         links: [
-          { label: 'Duplex & houses', to: '/properties?purpose=sale&propertyType=house' },
-          { label: 'Apartments', to: '/properties?purpose=sale&propertyType=apartment' },
-          { label: 'Land', to: '/land/in/lagos' },
+          { label: 'Duplex & houses', to: '/properties?purpose=sale&propertyType=house&location=Nigeria' },
+          { label: 'Apartments', to: '/properties?purpose=sale&propertyType=apartment&location=Nigeria' },
+          { label: 'Land', to: '/properties?purpose=sale&propertyType=land&location=Nigeria' },
         ],
       },
       {
@@ -56,9 +56,9 @@ const NAV: NavItem[] = [
       {
         title: 'Rentals',
         links: [
-          { label: 'Homes for rent', to: '/for-rent/in/lagos' },
-          { label: 'Short lets', to: '/shortlet/in/lagos', hint: 'Daily & monthly' },
-          { label: 'Serviced apartments', to: '/for-rent/in/lagos' },
+          { label: 'Homes for rent', to: '/properties?purpose=rent&location=Nigeria', hint: 'Nationwide' },
+          { label: 'Short lets', to: '/properties?purpose=shortlet&location=Nigeria', hint: 'Daily & monthly' },
+          { label: 'Serviced apartments', to: '/properties?purpose=rent&location=Nigeria' },
         ],
       },
       {
@@ -77,8 +77,8 @@ const NAV: NavItem[] = [
       },
     ],
   },
-  { type: 'link', label: 'Short Let', to: '/shortlet/in/lagos' },
-  { type: 'link', label: 'Land', to: '/land/in/lagos' },
+  { type: 'link', label: 'Short Let', to: '/properties?purpose=shortlet&location=Nigeria' },
+  { type: 'link', label: 'Land', to: '/properties?purpose=sale&propertyType=land&location=Nigeria' },
   {
     type: 'mega',
     label: 'Explore',

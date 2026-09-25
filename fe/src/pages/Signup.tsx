@@ -99,7 +99,7 @@ const SignUp: React.FC = () => {
 
       <form onSubmit={onSubmit} noValidate className="space-y-5">
         <fieldset>
-          <legend className="mb-2 text-sm font-medium text-gray-800">I am a…</legend>
+          <legend className="mb-2 text-sm font-medium text-ink">I am a…</legend>
           <div role="radiogroup" className="grid grid-cols-2 gap-3">
             {ACCOUNT_TYPES.map(({ role: r, label, description, icon: Icon }) => {
               const selected = role === r;
@@ -109,7 +109,7 @@ const SignUp: React.FC = () => {
                   className={`relative flex cursor-pointer flex-col gap-1 rounded-xl border p-3.5 transition focus-within:ring-4 focus-within:ring-brand-green/25 ${
                     selected
                       ? 'border-brand-green bg-brand-green/5 shadow-sm'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      : 'border-line hover:border-line-strong hover:bg-chip'
                   }`}
                 >
                   <input
@@ -123,13 +123,13 @@ const SignUp: React.FC = () => {
                   />
                   <span
                     className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                      selected ? 'bg-brand-green text-white' : 'bg-gray-100 text-gray-600'
+                      selected ? 'bg-brand-green text-white' : 'bg-chip text-ink-muted'
                     }`}
                   >
                     <Icon aria-hidden size={18} />
                   </span>
-                  <span className="mt-1 text-sm font-semibold text-gray-900">{label}</span>
-                  <span className="text-xs leading-snug text-gray-500">{description}</span>
+                  <span className="mt-1 text-sm font-semibold text-ink">{label}</span>
+                  <span className="text-xs leading-snug text-ink-muted">{description}</span>
                   {selected && (
                     <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-brand-green text-white">
                       <FiCheck aria-hidden size={13} strokeWidth={3} />
@@ -194,7 +194,7 @@ const SignUp: React.FC = () => {
         <PasswordStrengthMeter password={password} />
 
         <div>
-          <label className="flex cursor-pointer items-start gap-2.5 text-sm text-gray-700">
+          <label className="flex cursor-pointer items-start gap-2.5 text-sm text-ink-secondary">
             <input
               type="checkbox"
               checked={terms}
@@ -204,14 +204,19 @@ const SignUp: React.FC = () => {
               }}
               aria-invalid={!!show('terms')}
               aria-describedby={show('terms') ? 'terms-error' : undefined}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 accent-brand-green focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2"
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-field-border accent-brand-green focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 focus-visible:ring-offset-surface-elevated"
               disabled={loading}
             />
             <span>
               I agree to PropertyArena&apos;s{' '}
-              <span className="font-medium text-gray-900 underline decoration-gray-300">Terms of Service</span>{' '}
+              <Link to="/terms" className="font-medium text-ink underline decoration-line">
+                Terms of Service
+              </Link>{' '}
               and{' '}
-              <span className="font-medium text-gray-900 underline decoration-gray-300">Privacy Policy</span>.
+              <Link to="/privacy" className="font-medium text-ink underline decoration-line">
+                Privacy Policy
+              </Link>
+              .
             </span>
           </label>
           {show('terms') && (

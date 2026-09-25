@@ -27,20 +27,19 @@ import MarketplaceHeader from '@/components/navbar/MarketplaceHeader';
 import SiteFooter from '@/components/footer/SiteFooter';
 import AdSlot from '@/components/ads/AdSlot';
 import SeoHead from '@/components/seo/SeoHead';
+import SoldProperties from '@/components/marketplace/SoldProperties';
+import ListYourPropertyCTA from '@/components/marketplace/ListYourPropertyCTA';
+import ArenaSelectPremium from '@/components/marketplace/ArenaSelectPremium';
 import { usePropertyStore } from '@/store/propertyStore';
 import { ADMIN_SERVICE } from '@/services/admin';
 import { buildSeoPath } from '@/lib/seo';
+import { MEDIA, galleryAt } from '@/data/media';
 import {
   POPULAR_DESTINATIONS,
   buildListingSearchUrl,
   type SearchTab,
 } from '@/lib/locations';
-
-const HERO_IMG =
-  'https://images.unsplash.com/photo-1593696140826-c58b021acf8b?q=80&w=1470&auto=format&fit=crop';
-
-const FALLBACK_IMG =
-  'https://res.cloudinary.com/dhhknhoo2/image/upload/v1751956131/property.jpg';
+import GoogleLiveSearch from '@/components/search/GoogleLiveSearch';
 
 const SEARCH_TABS: SearchTab[] = ['Buy', 'Rent', 'Land', 'Short Let', 'Commercial'];
 
@@ -53,53 +52,53 @@ const TRUST = [
 ];
 
 const PURPOSES = [
-  { title: 'Buy a Home', desc: 'Find your perfect home', to: '/for-sale/in/lagos', icon: FaHome },
-  { title: 'Rent a Home', desc: 'Short & long term', to: '/for-rent/in/lagos', icon: FaKey },
-  { title: 'Land for Sale', desc: 'Residential & commercial', to: '/land/in/lagos', icon: FaMap },
-  { title: 'Short Let', desc: 'Daily & monthly stays', to: '/shortlet/in/lagos', icon: FaBed },
-  { title: 'Commercial', desc: 'Offices & spaces', to: '/properties?propertyType=commercial', icon: FaBuilding },
+  { title: 'Buy a Home', desc: 'Find your perfect home', to: '/properties?purpose=sale&location=Nigeria', icon: FaHome },
+  { title: 'Rent a Home', desc: 'Short & long term', to: '/properties?purpose=rent&location=Nigeria', icon: FaKey },
+  { title: 'Land for Sale', desc: 'Residential & commercial', to: '/properties?purpose=sale&propertyType=land&location=Nigeria', icon: FaMap },
+  { title: 'Short Let', desc: 'Daily & monthly stays', to: '/properties?purpose=shortlet&location=Nigeria', icon: FaBed },
+  { title: 'Commercial', desc: 'Offices & spaces', to: '/properties?propertyType=commercial&location=Nigeria', icon: FaBuilding },
 ];
 
 const FALLBACK_FEATURED = [
   {
     id: 'f1',
-    title: '4 Bedroom Duplex',
-    location: 'Lagos, Nigeria',
-    price: '₦500,000,000',
+    title: '4 Bedroom Duplex with BQ',
+    location: 'Lekki Phase 1, Lagos',
+    price: '₦320,000,000',
     beds: 4,
-    baths: 3,
-    area: '550sqm',
-    img: FALLBACK_IMG,
+    baths: 5,
+    area: '450sqm',
+    img: MEDIA.duplex,
   },
   {
     id: 'f2',
-    title: '1 plot of land for sale at Wuse, Abuja',
-    location: 'Abuja Federal Capital Territory, Nigeria',
+    title: 'Plot of land for sale at Wuse',
+    location: 'Wuse, Abuja',
     price: '₦50,000,000',
     beds: null as number | null,
     baths: null as number | null,
     area: '500sqm',
-    img: FALLBACK_IMG,
+    img: MEDIA.land,
   },
   {
     id: 'f3',
-    title: 'Prop in Ajah Lagos',
-    location: 'Lagos, Nigeria',
-    price: '₦590,000',
+    title: 'Luxury waterfront apartment',
+    location: 'Ikoyi, Lagos',
+    price: '₦185,000,000',
     beds: 3,
-    baths: null as number | null,
-    area: null as string | null,
-    img: FALLBACK_IMG,
+    baths: 3,
+    area: '210sqm',
+    img: MEDIA.apartment,
   },
   {
     id: 'f4',
-    title: '2 Bedroom Flat in Ajah',
-    location: 'Lagos, Nigeria',
-    price: '₦3,500,000',
-    beds: 2,
-    baths: null as number | null,
-    area: null as string | null,
-    img: FALLBACK_IMG,
+    title: 'Contemporary terrace home',
+    location: 'Ajah, Lagos',
+    price: '₦145,000,000',
+    beds: 4,
+    baths: 4,
+    area: '280sqm',
+    img: MEDIA.terrace,
   },
 ];
 
@@ -129,36 +128,12 @@ const RENTAL_TRENDS = [
 ];
 
 const LOCATIONS = [
-  {
-    name: 'Lekki',
-    state: 'Lagos',
-    img: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=600&auto=format&fit=crop',
-  },
-  {
-    name: 'Ikoyi',
-    state: 'Lagos',
-    img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=600&auto=format&fit=crop',
-  },
-  {
-    name: 'Gwarinpa',
-    state: 'Abuja',
-    img: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=600&auto=format&fit=crop',
-  },
-  {
-    name: 'Asaba',
-    state: 'Delta',
-    img: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=600&auto=format&fit=crop',
-  },
-  {
-    name: 'Port Harcourt',
-    state: 'Rivers',
-    img: 'https://images.unsplash.com/photo-1523217582562-09d0def993a6?q=80&w=600&auto=format&fit=crop',
-  },
-  {
-    name: 'Ibadan',
-    state: 'Oyo',
-    img: 'https://images.unsplash.com/photo-1449034446853-66c86144b0ad?q=80&w=600&auto=format&fit=crop',
-  },
+  { name: 'Lekki', state: 'Lagos', img: MEDIA.duplex },
+  { name: 'Ikoyi', state: 'Lagos', img: MEDIA.pool },
+  { name: 'Gwarinpa', state: 'Abuja', img: MEDIA.bungalow },
+  { name: 'Asaba', state: 'Delta', img: MEDIA.street },
+  { name: 'Port Harcourt', state: 'Rivers', img: MEDIA.citySkyline },
+  { name: 'Ibadan', state: 'Oyo', img: MEDIA.apartment2 },
 ];
 
 const CONFIDENCE = [
@@ -173,30 +148,104 @@ const GUIDES = [
     tag: 'Buying Guide',
     title: 'Complete Guide to Buying Property in Nigeria',
     read: '5 min read',
-    img: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&auto=format&fit=crop',
+    img: MEDIA.interior,
     slug: 'buying-guide-nigeria',
   },
   {
     tag: 'Investment',
     title: 'Top Real Estate Investment Hotspots',
     read: '6 min read',
-    img: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop',
+    img: MEDIA.citySkyline,
     slug: 'investment-hotspots',
   },
   {
     tag: 'Legal',
     title: 'Land Documentation Process Explained',
     read: '4 min read',
-    img: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&auto=format&fit=crop',
+    img: MEDIA.land,
     slug: 'land-documentation',
   },
   {
     tag: 'Trends',
     title: '2026 Real Estate Market Outlook',
     read: '5 min read',
-    img: 'https://images.unsplash.com/photo-1460317442991-0ec209397118?w=800&auto=format&fit=crop',
+    img: MEDIA.duplexNight,
     slug: 'market-outlook-2026',
   },
+];
+
+const PRICE_RANGES = [
+  { label: 'Any price', min: '', max: '' },
+  { label: 'Under ₦20m', min: '', max: '20000000' },
+  { label: '₦20m – ₦50m', min: '20000000', max: '50000000' },
+  { label: '₦50m – ₦100m', min: '50000000', max: '100000000' },
+  { label: '₦100m – ₦250m', min: '100000000', max: '250000000' },
+  { label: '₦250m+', min: '250000000', max: '' },
+];
+
+const TYPES_BY_TAB: Record<SearchTab, { value: string; label: string }[]> = {
+  Buy: [
+    { value: 'Duplex', label: 'Duplex' },
+    { value: 'Apartment', label: 'Flat / Apartment' },
+    { value: 'Terrace', label: 'Terrace' },
+    { value: 'Bungalow', label: 'Bungalow' },
+    { value: 'Mansion', label: 'Mansion' },
+    { value: 'Mini Flat', label: 'Mini flat' },
+    { value: 'Penthouse', label: 'Penthouse' },
+  ],
+  Rent: [
+    { value: 'Apartment', label: 'Flat / Apartment' },
+    { value: 'Mini Flat', label: 'Mini flat' },
+    { value: 'Self Contain', label: 'Self contain' },
+    { value: 'Duplex', label: 'Duplex' },
+    { value: 'Terrace', label: 'Terrace' },
+    { value: 'Bungalow', label: 'Bungalow' },
+    { value: 'Shared Apartment', label: 'Shared apartment' },
+  ],
+  Land: [
+    { value: 'Residential Land', label: 'Residential plot' },
+    { value: 'Commercial Land', label: 'Commercial plot' },
+    { value: 'Industrial Land', label: 'Industrial land' },
+    { value: 'Farmland', label: 'Farmland' },
+    { value: 'Mixed Use Land', label: 'Mixed-use land' },
+  ],
+  'Short Let': [
+    { value: 'Apartment', label: 'Apartment' },
+    { value: 'Studio', label: 'Studio' },
+    { value: 'Duplex', label: 'Duplex' },
+    { value: 'Penthouse', label: 'Penthouse' },
+    { value: 'Serviced Apartment', label: 'Serviced apartment' },
+  ],
+  Commercial: [
+    { value: 'Office', label: 'Office space' },
+    { value: 'Shop', label: 'Shop / Retail' },
+    { value: 'Warehouse', label: 'Warehouse' },
+    { value: 'Co Working Space', label: 'Co-working space' },
+    { value: 'Showroom', label: 'Showroom' },
+    { value: 'Plaza', label: 'Plaza / Complex' },
+  ],
+};
+
+const LAND_SIZES = [
+  { value: '', label: 'Any size' },
+  { value: 'half-plot', label: 'Half plot' },
+  { value: 'full-plot', label: 'Full plot' },
+  { value: '2-plots', label: '2 plots' },
+  { value: '500sqm', label: '500 sqm' },
+  { value: '1000sqm', label: '1,000 sqm' },
+  { value: '1-acre', label: '1 acre' },
+  { value: '2-acres', label: '2 acres' },
+  { value: '1-hectare', label: '1 hectare' },
+  { value: 'hectares', label: 'Hectares+' },
+];
+
+const COMMERCIAL_SIZES = [
+  { value: '', label: 'Any size' },
+  { value: 'under-50', label: 'Under 50 sqm' },
+  { value: '50-100', label: '50 – 100 sqm' },
+  { value: '100-250', label: '100 – 250 sqm' },
+  { value: '250-500', label: '250 – 500 sqm' },
+  { value: '500+', label: '500+ sqm' },
 ];
 
 const formatPrice = (price: number | string | undefined) => {
@@ -211,11 +260,21 @@ const HomePage = () => {
   const [tab, setTab] = useState<SearchTab>('Buy');
   const [location, setLocation] = useState('');
   const [propertyType, setPropertyType] = useState('');
+  const [priceRange, setPriceRange] = useState('Any price');
+  const [bedrooms, setBedrooms] = useState('');
+  const [landSize, setLandSize] = useState('');
   const [marketTab, setMarketTab] = useState<'sales' | 'rental'>('sales');
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
-  const [heroReady, setHeroReady] = useState(false);
+  const [heroReady, setHeroReady] = useState(true);
   const [articles, setArticles] = useState(GUIDES);
+
+  const switchTab = (next: SearchTab) => {
+    setTab(next);
+    setPropertyType('');
+    setBedrooms('');
+    setLandSize('');
+  };
 
   useEffect(() => {
     fetchFeaturedProperties({ page: 1, limit: 4 });
@@ -243,7 +302,7 @@ const HomePage = () => {
     if (!featuredListings?.length) {
       return isProd ? [] : FALLBACK_FEATURED;
     }
-    return featuredListings.slice(0, 4).map((raw) => {
+    return featuredListings.slice(0, 4).map((raw, i) => {
       const item = raw as typeof raw & {
         _id?: string;
         image?: string;
@@ -262,14 +321,33 @@ const HomePage = () => {
         beds: item.bedrooms ?? null,
         baths: item.bathrooms ?? null,
         area: item.area || (item.size != null ? `${item.size}sqm` : null),
-        img: item.image || item.media?.[0]?.url || FALLBACK_IMG,
+        img: item.image || item.media?.[0]?.url || galleryAt(i),
       };
     });
   })();
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
-    navigate(buildListingSearchUrl(tab, location, propertyType));
+    const typeForUrl =
+      tab === 'Land'
+        ? propertyType || 'Land'
+        : tab === 'Commercial'
+          ? propertyType || 'Commercial'
+          : propertyType;
+    let url = buildListingSearchUrl(tab, location, typeForUrl);
+    const range = PRICE_RANGES.find((r) => r.label === priceRange);
+    const params = new URLSearchParams(url.includes('?') ? url.split('?')[1] : '');
+    if (range?.min) params.set('minPrice', range.min);
+    if (range?.max) params.set('maxPrice', range.max);
+    if (tab !== 'Land' && tab !== 'Commercial' && bedrooms) {
+      params.set('bedroom', bedrooms);
+    }
+    if ((tab === 'Land' || tab === 'Commercial') && landSize) {
+      params.set('size', landSize);
+    }
+    const qs = params.toString();
+    const path = url.split('?')[0];
+    navigate(qs ? `${path}?${qs}` : path);
   };
 
   const goPopular = (name: string, state: string) => {
@@ -287,131 +365,224 @@ const HomePage = () => {
       />
       <MarketplaceHeader />
 
-      {/* Hero — full-bleed with Google-style search */}
-      <section className="relative">
-        <div className="relative flex min-h-[72vh] items-center overflow-hidden py-16 sm:min-h-[78vh]">
+      {/* Hero — NPC / PropertyPro style: dark plane + neat white search card */}
+      <section className="relative bg-[#071510]">
+        {/* Clip decorative media only — keep content overflow visible for live search */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
           <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[8s] ease-out"
+            className="absolute inset-0 bg-cover bg-center opacity-35 transition-transform duration-[8s] ease-out"
             style={{
-              backgroundImage: `url('${HERO_IMG}')`,
-              transform: heroReady ? 'scale(1.06)' : 'scale(1)',
+              backgroundImage: `url('${MEDIA.hero}')`,
+              transform: heroReady ? 'scale(1.05)' : 'scale(1)',
             }}
           />
-          <div className="absolute inset-0 bg-black/55" />
-          <div
-            className={`relative z-10 mx-auto w-full max-w-5xl px-4 text-center transition-all duration-700 ${
-              heroReady ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-            }`}
-          >
-            <span className="mb-5 inline-flex rounded-full bg-brand-green px-4 py-1.5 text-xs font-semibold tracking-wide text-white shadow-sm sm:text-sm">
-              Nigeria&apos;s Smartest Property Marketplace
+          <div className="absolute inset-0 bg-gradient-to-br from-[#071510] via-[#0b1f14]/92 to-[#143022]/85" />
+          <div className="absolute -right-20 top-0 h-80 w-80 rounded-full bg-brand-green/25 blur-3xl" />
+        </div>
+
+        <div
+          className={`relative z-10 mx-auto w-full max-w-5xl px-4 pb-16 pt-14 transition-all duration-700 sm:px-6 sm:pt-16 lg:px-8 ${
+            heroReady ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
+          }`}
+        >
+          <div className="mb-8 max-w-2xl">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white ring-1 ring-white/15">
+              <FaShieldAlt className="text-brand-green" />
+              Nigeria&apos;s property marketplace
             </span>
-            <h1 className="mb-3 text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
-              Find. Compare. Own
-              <br />
-              <span className="text-brand-green">Your Dream Property</span>
+            <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-[3.25rem]">
+              Find the right property
             </h1>
-            <p className="mx-auto mb-8 max-w-xl text-base text-white/85 sm:text-lg">
-              Search homes, land and short lets across Nigeria
+            <p className="mt-3 max-w-xl text-base text-white/75 sm:text-lg">
+              Search homes, land and commercial property for sale and rent — across every major city in Nigeria.
             </p>
+          </div>
 
-            <form
-              onSubmit={handleSearch}
-              className="mx-auto w-full max-w-3xl rounded-3xl border border-white/15 bg-white/10 p-3 shadow-2xl backdrop-blur-md sm:p-4"
-            >
-              <div className="mb-3 flex flex-wrap justify-center gap-1.5 sm:gap-2">
-                {SEARCH_TABS.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setTab(t)}
-                    className={`rounded-full px-3.5 py-2 text-xs font-bold transition sm:px-4 sm:text-sm ${
-                      tab === t
-                        ? 'bg-white text-brand-green shadow-md'
-                        : 'bg-white/10 text-white hover:bg-white/20'
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex flex-col gap-2 rounded-2xl bg-white p-2 shadow-xl sm:flex-row sm:items-center dark:bg-surface-elevated">
-                <div className="flex min-w-0 flex-1 items-center gap-2 px-2">
-                  <FaSearch className="shrink-0 text-ink-muted" />
-                  <input
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Search Lekki, Ikoyi, Gwarinpa, Ajah…"
-                    className="min-w-0 flex-1 border-0 bg-transparent py-3 text-base text-ink outline-none placeholder:text-ink-muted sm:text-lg"
-                    aria-label="Search location"
-                  />
-                </div>
-                <div className="hidden h-8 w-px bg-line sm:block" />
-                <select
-                  value={propertyType}
-                  onChange={(e) => setPropertyType(e.target.value)}
-                  className="mx-1 rounded-xl border-0 bg-chip px-3 py-3 text-sm font-medium text-ink-secondary outline-none sm:max-w-[9rem]"
-                  aria-label="Property type"
-                >
-                  <option value="">Any type</option>
-                  <option value="Duplex">Duplex</option>
-                  <option value="Apartment">Apartment</option>
-                  <option value="Bungalow">Bungalow</option>
-                  <option value="Land">Land</option>
-                  <option value="Commercial">Commercial</option>
-                </select>
+          <form
+            onSubmit={handleSearch}
+            className="w-full max-w-5xl"
+          >
+            {/* Purpose tabs above the Google-style bar */}
+            <div className="mb-3 flex flex-wrap gap-1.5 sm:gap-2">
+              {SEARCH_TABS.map((t) => (
                 <button
-                  type="submit"
-                  className="shrink-0 rounded-xl bg-brand-green px-6 py-3.5 text-sm font-bold text-white transition hover:bg-brand-green-dark sm:rounded-2xl sm:px-8 sm:text-base"
+                  key={t}
+                  type="button"
+                  onClick={() => switchTab(t)}
+                  className={`rounded-full px-4 py-2 text-xs font-bold transition sm:text-sm ${
+                    tab === t
+                      ? 'bg-white text-brand-green shadow-md'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
                 >
-                  Search
+                  {t}
                 </button>
-              </div>
-
-              <p className="mt-4 mb-2 text-left text-[11px] font-bold uppercase tracking-wider text-white/60 sm:text-center">
-                Popular destinations · {tab}
-              </p>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 sm:gap-3">
-                {POPULAR_DESTINATIONS.map((place) => (
-                  <button
-                    key={place.name}
-                    type="button"
-                    onClick={() => goPopular(place.name, place.state)}
-                    className="group relative overflow-hidden rounded-2xl text-left ring-1 ring-white/20 transition hover:-translate-y-0.5 hover:ring-brand-green/60"
-                  >
-                    <img
-                      src={place.img}
-                      alt={`${place.name}, ${place.state}`}
-                      className="h-24 w-full object-cover transition duration-500 group-hover:scale-105 sm:h-28"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-2.5 text-white">
-                      <p className="text-sm font-bold leading-tight">{place.name}</p>
-                      <p className="text-[10px] text-white/75">{place.state}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </form>
-
-            <div className="mx-auto mt-10 grid max-w-xl grid-cols-3 gap-4 sm:gap-8">
-              {[
-                { value: '50,000+', label: 'Verified Listings' },
-                { value: '25,000+', label: 'Happy Clients' },
-                { value: '3,000+', label: 'Active Agents' },
-              ].map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <p className="text-xl font-bold text-white sm:text-2xl">{stat.value}</p>
-                  <p className="mt-1 text-[11px] text-white/70 sm:text-xs">{stat.label}</p>
-                </div>
               ))}
             </div>
+
+            {/* Google-format long search bar — one continuous pill */}
+            <div className="flex w-full flex-col gap-2 rounded-2xl bg-white p-2 shadow-2xl ring-1 ring-black/10 sm:flex-row sm:items-center sm:rounded-full sm:p-1.5 sm:pl-4 dark:bg-surface-elevated">
+              <div className="flex min-w-0 flex-1 items-center gap-3 px-2 py-2 sm:px-0 sm:py-0">
+                <FaSearch className="shrink-0 text-lg text-ink-muted" />
+                <input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Search state, locality, area or keyword…"
+                  className="min-w-0 flex-1 border-0 bg-transparent text-base text-ink outline-none placeholder:text-ink-muted sm:text-lg"
+                  aria-label="Search location"
+                />
+              </div>
+
+              <div className="hidden h-8 w-px shrink-0 bg-line sm:block" />
+
+              <select
+                value={propertyType}
+                onChange={(e) => setPropertyType(e.target.value)}
+                className="w-full shrink-0 rounded-xl border-0 bg-chip px-3 py-2.5 text-sm font-medium text-ink outline-none sm:w-auto sm:min-w-[9.5rem] sm:rounded-none sm:bg-transparent"
+                aria-label={tab === 'Land' ? 'Land type' : tab === 'Commercial' ? 'Space type' : 'Property type'}
+              >
+                <option value="">
+                  {tab === 'Land' ? 'Any land type' : tab === 'Commercial' ? 'Any space' : 'Any type'}
+                </option>
+                {TYPES_BY_TAB[tab].map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+
+              <div className="hidden h-8 w-px shrink-0 bg-line sm:block" />
+
+              <select
+                value={priceRange}
+                onChange={(e) => setPriceRange(e.target.value)}
+                className="w-full shrink-0 rounded-xl border-0 bg-chip px-3 py-2.5 text-sm font-medium text-ink outline-none sm:w-auto sm:min-w-[8.5rem] sm:rounded-none sm:bg-transparent"
+                aria-label="Price range"
+              >
+                {PRICE_RANGES.map((r) => (
+                  <option key={r.label} value={r.label}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+
+              <div className="hidden h-8 w-px shrink-0 bg-line sm:block" />
+
+              {tab === 'Land' ? (
+                <select
+                  value={landSize}
+                  onChange={(e) => setLandSize(e.target.value)}
+                  className="w-full shrink-0 rounded-xl border-0 bg-chip px-3 py-2.5 text-sm font-medium text-ink outline-none sm:w-auto sm:min-w-[8rem] sm:rounded-none sm:bg-transparent"
+                  aria-label="Land size"
+                >
+                  {LAND_SIZES.map((s) => (
+                    <option key={s.value || 'any'} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              ) : tab === 'Commercial' ? (
+                <select
+                  value={landSize}
+                  onChange={(e) => setLandSize(e.target.value)}
+                  className="w-full shrink-0 rounded-xl border-0 bg-chip px-3 py-2.5 text-sm font-medium text-ink outline-none sm:w-auto sm:min-w-[8rem] sm:rounded-none sm:bg-transparent"
+                  aria-label="Floor size"
+                >
+                  {COMMERCIAL_SIZES.map((s) => (
+                    <option key={s.value || 'any'} value={s.value}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <select
+                  value={bedrooms}
+                  onChange={(e) => setBedrooms(e.target.value)}
+                  className="w-full shrink-0 rounded-xl border-0 bg-chip px-3 py-2.5 text-sm font-medium text-ink outline-none sm:w-auto sm:min-w-[7rem] sm:rounded-none sm:bg-transparent"
+                  aria-label="Bedrooms"
+                >
+                  <option value="">Any beds</option>
+                  {[1, 2, 3, 4, 5, 6].map((n) => (
+                    <option key={n} value={String(n)}>
+                      {n}+ bed
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              <button
+                type="submit"
+                className="flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-brand-green px-6 py-3 text-sm font-bold text-white transition hover:bg-brand-green-dark sm:w-auto sm:rounded-full sm:px-8"
+              >
+                <FaSearch /> Search
+              </button>
+            </div>
+          </form>
+
+          {/* Google-style live search under the filter card — high z so dropdown clears next section */}
+          <div className="relative z-[60] mt-5 isolate">
+            <p className="mb-2 text-center text-[11px] font-semibold uppercase tracking-wider text-white/50">
+              Or search live across Nigeria
+            </p>
+            <GoogleLiveSearch />
+          </div>
+
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
+            {[
+              { value: '50,000+', label: 'Active listings' },
+              { value: '3,000+', label: 'Active agents' },
+              { value: '200+', label: 'Areas covered' },
+              { value: '36+', label: 'States covered' },
+            ].map((stat) => (
+              <div key={stat.label}>
+                <p className="text-xl font-extrabold text-white sm:text-2xl">{stat.value}</p>
+                <p className="mt-0.5 text-xs text-white/60">{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Trust bar */}
+      {/* Popular destinations — neat image cards */}
+      <section className="border-b border-line bg-surface-elevated py-10">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-5 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-brand-green">Popular destinations</p>
+              <h2 className="text-xl font-extrabold text-ink sm:text-2xl">Where buyers search most · {tab}</h2>
+            </div>
+            <Link to="/properties?purpose=sale&location=Nigeria" className="text-sm font-semibold text-brand-green hover:underline">
+              Browse Nigeria
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {POPULAR_DESTINATIONS.map((place) => (
+              <button
+                key={place.name}
+                type="button"
+                onClick={() => goPopular(place.name, place.state)}
+                className="group overflow-hidden rounded-2xl bg-surface text-left ring-1 ring-line transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img
+                    src={place.img}
+                    alt={`${place.name}, ${place.state}`}
+                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-3 text-white">
+                    <p className="text-sm font-bold">{place.name}</p>
+                    <p className="text-[10px] text-white/80">{place.state}</p>
+                  </div>
+                </div>
+                <p className="line-clamp-1 px-3 py-2 text-[11px] text-ink-muted">{place.blurb}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="border-y border-line bg-surface-muted">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-8 sm:grid-cols-3 sm:px-6 lg:grid-cols-5 lg:px-8">
           {TRUST.map(({ icon: Icon, label, sub }) => (
@@ -428,7 +599,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Browse by purpose — icon cards like live */}
       <section className="py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8 flex items-end justify-between gap-4">
@@ -455,7 +625,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Featured */}
       <section className="bg-surface-muted py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8 flex items-end justify-between gap-4">
@@ -479,7 +648,11 @@ const HomePage = () => {
             {featured.map((p) => (
               <Link
                 key={p.id}
-                to={p.id.startsWith('f') ? `/properties?location=${encodeURIComponent(p.location.split(',')[0])}` : `/properties/${p.id}`}
+                to={
+                  p.id.startsWith('f')
+                    ? `/properties?location=${encodeURIComponent(p.location.split(',')[0])}`
+                    : `/properties/${p.id}`
+                }
                 className="group overflow-hidden rounded-xl bg-surface-elevated shadow-sm ring-1 ring-line transition hover:-translate-y-1 hover:shadow-lg"
               >
                 <div className="relative aspect-[4/3] overflow-hidden">
@@ -487,11 +660,12 @@ const HomePage = () => {
                     src={p.img}
                     alt={p.title}
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    loading="lazy"
                   />
                   <span className="absolute left-3 top-3 rounded bg-brand-green px-2 py-0.5 text-[10px] font-bold uppercase text-white">
                     Featured
                   </span>
-                  <span className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-400 shadow-sm transition hover:text-brand-red">
+                  <span className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-400 shadow-sm">
                     <FaHeart className="text-sm" />
                   </span>
                 </div>
@@ -526,12 +700,28 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Admin-managed homepage banner */}
       <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
         <AdSlot placement="homepage_banner" />
       </div>
 
-      {/* Why + Partners + Market */}
+      <section className="py-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <SoldProperties />
+        </div>
+      </section>
+
+      <ListYourPropertyCTA />
+
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <AdSlot placement="homepage_mid" />
+      </div>
+
+      <section className="py-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <ArenaSelectPremium />
+        </div>
+      </section>
+
       <section className="py-14">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-[1fr_1fr_1fr_240px] lg:px-8">
           <div className="rounded-xl border border-line bg-surface-elevated p-6 shadow-sm">
@@ -616,14 +806,13 @@ const HomePage = () => {
                 </li>
               ))}
             </ul>
-            <p className="mt-4 text-[11px] text-ink-muted">Illustrative figures · Q2 2024 Market Report</p>
+            <p className="mt-4 text-[11px] text-ink-muted">Illustrative figures · Market report</p>
           </div>
 
           <AdSlot placement="homepage_sidebar" className="lg:pt-0" />
         </div>
       </section>
 
-      {/* Top locations */}
       <section className="bg-surface-muted py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8 flex items-end justify-between gap-4">
@@ -646,6 +835,7 @@ const HomePage = () => {
                   src={loc.img}
                   alt={loc.name}
                   className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-3 text-white">
@@ -658,7 +848,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Video + Testimonial + Confidence */}
       <section className="py-14">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-3 lg:px-8">
           <div className="overflow-hidden rounded-xl border border-line bg-surface-elevated shadow-sm">
@@ -672,13 +861,9 @@ const HomePage = () => {
               </Link>
             </div>
             <div className="relative m-5 overflow-hidden rounded-lg">
-              <img
-                src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=800&auto=format&fit=crop"
-                alt="Video tour"
-                className="h-48 w-full object-cover"
-              />
+              <img src={MEDIA.interior} alt="Video tour" className="h-48 w-full object-cover" loading="lazy" />
               <div className="absolute inset-0 flex items-center justify-center bg-black/35">
-                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-green text-white shadow-lg transition hover:scale-105">
+                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-green text-white shadow-lg">
                   <FaPlay className="ml-1" />
                 </span>
               </div>
@@ -728,7 +913,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Guides */}
       <section className="bg-surface-muted py-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8 flex items-end justify-between gap-4">
@@ -747,7 +931,12 @@ const HomePage = () => {
                 to={g.slug ? `/articles/${g.slug}` : '/articles'}
                 className="group overflow-hidden rounded-xl bg-surface-elevated shadow-sm ring-1 ring-line transition hover:-translate-y-1 hover:shadow-md"
               >
-                <img src={g.img} alt={g.title} className="h-40 w-full object-cover transition duration-500 group-hover:scale-105" />
+                <img
+                  src={g.img}
+                  alt={g.title}
+                  className="h-40 w-full object-cover transition duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
                 <div className="p-4">
                   <span className="text-xs font-semibold uppercase tracking-wide text-brand-green">{g.tag}</span>
                   <h3 className="mt-2 line-clamp-2 font-bold text-ink group-hover:text-brand-green">{g.title}</h3>
@@ -759,13 +948,11 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Newsletter */}
       <section className="relative overflow-hidden bg-[#0b1f14] py-14">
         <div
           className="pointer-events-none absolute inset-y-0 right-0 w-1/2 opacity-20"
           style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=800&auto=format&fit=crop')",
+            backgroundImage: `url('${MEDIA.duplexNight}')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -802,6 +989,10 @@ const HomePage = () => {
           </form>
         </div>
       </section>
+
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <AdSlot placement="footer_strip" />
+      </div>
 
       <SiteFooter />
     </div>

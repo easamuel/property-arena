@@ -66,10 +66,10 @@ const ResetPassword: React.FC = () => {
           <StatusIcon tone="error">
             <FiAlertTriangle size={28} />
           </StatusIcon>
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900">
+          <h2 className="text-2xl font-bold tracking-tight text-ink">
             {token ? 'Link expired' : 'Invalid reset link'}
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-ink-muted">
             {token
               ? 'This password reset link is invalid or has expired. Request a new one to continue.'
               : 'This link is missing its reset token. Please use the full link from your email, or request a new one.'}
@@ -80,7 +80,7 @@ const ResetPassword: React.FC = () => {
           >
             Request a new link
           </Link>
-          <Link to="/login" className="mt-4 inline-block text-sm font-medium text-gray-700 hover:underline">
+          <Link to="/login" className="mt-4 inline-block text-sm font-medium text-ink-secondary hover:underline">
             Back to sign in
           </Link>
         </div>
@@ -95,8 +95,8 @@ const ResetPassword: React.FC = () => {
           <StatusIcon tone="success">
             <FiCheckCircle size={28} />
           </StatusIcon>
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900">Password updated</h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <h2 className="text-2xl font-bold tracking-tight text-ink">Password updated</h2>
+          <p className="mt-2 text-sm text-ink-muted">
             Your password has been reset successfully. You can now sign in with your new password.
           </p>
           <AuthButton type="button" className="mt-6" onClick={() => navigate('/login', { replace: true })}>

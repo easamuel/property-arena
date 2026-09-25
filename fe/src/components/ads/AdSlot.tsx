@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ADMIN_SERVICE } from '@/services/admin';
-
-export type AdPlacement =
-  | 'homepage_sidebar'
-  | 'listing_sidebar'
-  | 'homepage_banner'
-  | 'search_sidebar';
+import type { AdPlacement } from '@/lib/ad-placements';
 
 type Promo = {
   _id?: string;
@@ -17,6 +12,7 @@ type Promo = {
     placement?: string;
     imageUrl?: string;
     href?: string;
+    ctaUrl?: string;
     status?: string;
     body?: string;
   };
@@ -53,24 +49,26 @@ export function AdSlot({ placement, className = '' }: Props) {
   if (!items.length) return null;
 
   return (
-    <aside className={`space-y-3 ${className}`}>
+    <aside className={`space-y-3 ${className}`} data-ad-placement={placement}>
       {items.map((item) => {
         const d = item.data || {};
         const title = d.title || d.campaign || 'Featured';
-        const href = d.href || '/subscription';
+        const href = d.ctaUrl || d.href || '/subscription';
         const key = item.id || item._id || title;
         const inner = (
           <>
-            {d.imageUrl && <img src={d.imageUrl} alt="" className="h-28 w-full object-cover" />}
+            {d.imageUrl && (
+              <img src={d.imageUrl} alt="" className="h-28 w-full object-cover" loading="lazy" />
+            )}
             <div className="p-3">
               <p className="text-[10px] font-bold uppercase tracking-wider text-brand-green">Sponsored</p>
-              <p className="mt-1 text-sm font-bold text-gray-900 dark:text-white">{title}</p>
-              {d.body && <p className="mt-1 line-clamp-2 text-xs text-gray-500">{d.body}</p>}
+              <p className="mt-1 text-sm font-bold text-ink">{title}</p>
+              {d.body && <p className="mt-1 line-clamp-2 text-xs text-ink-muted">{d.body}</p>}
             </div>
           </>
         );
         const cls =
-          'block overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-[#152018]';
+          'block overflow-hidden rounded-xl border border-line bg-surface-elevated shadow-sm transition hover:shadow-md';
         if (href.startsWith('http')) {
           return (
             <a key={key} href={href} target="_blank" rel="noreferrer" className={cls}>
@@ -89,3 +87,4 @@ export function AdSlot({ placement, className = '' }: Props) {
 }
 
 export default AdSlot;
+export type { AdPlacement };

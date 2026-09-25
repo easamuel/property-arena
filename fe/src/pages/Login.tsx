@@ -138,12 +138,12 @@ const Login: React.FC = () => {
           }
         />
 
-        <label className="flex cursor-pointer items-center gap-2.5 text-sm text-gray-700 select-none">
+        <label className="flex cursor-pointer items-center gap-2.5 text-sm text-ink select-none">
           <input
             type="checkbox"
             checked={remember}
             onChange={(e) => setRemember(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 accent-brand-green focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2"
+            className="h-4 w-4 rounded border-field-border accent-brand-green focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 focus-visible:ring-offset-surface-elevated"
           />
           Keep me signed in
         </label>
@@ -153,7 +153,7 @@ const Login: React.FC = () => {
         </AuthButton>
       </form>
 
-      <p className="mt-6 text-center text-xs text-gray-500">
+      <p className="mt-6 text-center text-xs text-ink-muted">
         By continuing you agree to PropertyArena&apos;s Terms of Service and Privacy Policy.
       </p>
     </AuthLayout>

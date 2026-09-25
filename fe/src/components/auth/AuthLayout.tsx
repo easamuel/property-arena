@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiCheckCircle, FiLock, FiShield, FiUsers } from 'react-icons/fi';
+import { FiCheckCircle, FiLock, FiMoon, FiShield, FiSun, FiUsers } from 'react-icons/fi';
+import { useTheme } from '@/theme/ThemeProvider';
 
 const HERO_IMAGE =
   'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1600&q=80';
@@ -38,10 +39,12 @@ interface AuthLayoutProps {
 }
 
 const AuthLayout: React.FC<AuthLayoutProps> = ({ title, subtitle, children, footer, wide }) => {
+  const { theme, toggle } = useTheme();
+
   return (
-    <div className="min-h-screen w-full bg-gray-50 lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+    <div className="min-h-screen w-full bg-surface-muted lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
       <aside
-        className="relative hidden overflow-hidden bg-gray-900 lg:block"
+        className="relative hidden overflow-hidden bg-ink lg:block"
         aria-label="About PropertyArena"
       >
         <img
@@ -51,13 +54,23 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ title, subtitle, children, foot
           loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/55 to-black/85" />
-        <div className="relative z-10 flex h-full min-h-screen flex-col justify-between p-10 xl:p-14 text-white">
-          <Link
-            to="/"
-            className="inline-flex w-fit items-center rounded-2xl bg-white/95 px-3 py-2 shadow-lg ring-1 ring-white/20 transition hover:bg-white focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-green/60"
-          >
-            <img src="/logo.png" alt="PropertyArena home" className="h-12 w-auto object-contain" />
-          </Link>
+        <div className="relative z-10 flex h-full min-h-screen flex-col justify-between p-10 text-white xl:p-14">
+          <div className="flex items-center justify-between gap-4">
+            <Link
+              to="/"
+              className="inline-flex w-fit items-center rounded-2xl bg-white/95 px-3 py-2 shadow-lg ring-1 ring-white/20 transition hover:bg-white focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-green/60"
+            >
+              <img src="/logo.png" alt="PropertyArena home" className="h-12 w-auto object-contain" />
+            </Link>
+            <button
+              type="button"
+              onClick={toggle}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/20 transition hover:bg-white/20"
+            >
+              {theme === 'dark' ? <FiSun size={18} /> : <FiMoon size={18} />}
+            </button>
+          </div>
 
           <div className="max-w-lg">
             <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white/90 ring-1 ring-white/20 backdrop-blur">
@@ -97,7 +110,16 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ title, subtitle, children, foot
         </div>
       </aside>
 
-      <main className="flex min-h-screen flex-col items-center justify-center px-4 py-10 sm:px-6 lg:px-10">
+      <main className="relative flex min-h-screen flex-col items-center justify-center px-4 py-10 sm:px-6 lg:px-10">
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-line bg-surface-elevated text-ink shadow-sm transition hover:bg-chip lg:hidden"
+        >
+          {theme === 'dark' ? <FiSun size={18} /> : <FiMoon size={18} />}
+        </button>
+
         <div className={`w-full ${wide ? 'max-w-xl' : 'max-w-md'}`}>
           <Link
             to="/"
@@ -106,23 +128,23 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ title, subtitle, children, foot
             <img src="/logo.png" alt="PropertyArena home" className="h-16 w-auto object-contain" />
           </Link>
 
-          <div className="rounded-2xl bg-white p-6 shadow-xl shadow-gray-200/70 ring-1 ring-gray-100 sm:p-8">
+          <div className="rounded-2xl bg-surface-elevated p-6 shadow-xl ring-1 ring-line sm:p-8">
             {(title || subtitle) && (
               <header className="mb-6">
                 {title && (
-                  <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-[1.7rem]">
+                  <h2 className="text-2xl font-bold tracking-tight text-ink sm:text-[1.7rem]">
                     {title}
                   </h2>
                 )}
-                {subtitle && <p className="mt-1.5 text-sm text-gray-600">{subtitle}</p>}
+                {subtitle && <p className="mt-1.5 text-sm text-ink-muted">{subtitle}</p>}
               </header>
             )}
             {children}
           </div>
 
-          {footer && <div className="mt-6 text-center text-sm text-gray-600">{footer}</div>}
+          {footer && <div className="mt-6 text-center text-sm text-ink-muted">{footer}</div>}
 
-          <p className="mt-8 text-center text-xs text-gray-400">
+          <p className="mt-8 text-center text-xs text-ink-muted/80">
             &copy; {new Date().getFullYear()} PropertyArena. All rights reserved.
           </p>
         </div>

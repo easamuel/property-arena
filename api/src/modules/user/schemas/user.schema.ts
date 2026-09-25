@@ -75,6 +75,10 @@ export class User extends BaseSchema {
   @Prop({ default: true })
   isActive: boolean;
 
+  /** Admin-granted marketplace verification badge for agents. */
+  @Prop({ default: false })
+  isAgentVerified: boolean;
+
   /** First-month-free promo may be used exactly once per user lifecycle. */
   @Prop({ default: false })
   promoTrialUsed: boolean;

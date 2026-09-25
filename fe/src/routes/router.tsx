@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Outlet } from 'react-router-dom';
 import HomePage from '../pages/Homepage';
 import LoginPage from '../pages/Login';
 import NotFound from '../pages/Notfound';
@@ -28,6 +28,8 @@ import AdminProperties from '@/pages/admin/AdminProperties';
 import AdminTransactions from '@/pages/admin/AdminTransactions';
 import AdminPackages from '@/pages/admin/AdminPackages';
 import AdminLeads from '@/pages/admin/AdminLeads';
+import AdminListingReports from '@/pages/admin/AdminListingReports';
+import AdminListingReviews from '@/pages/admin/AdminListingReviews';
 import AdminPayments from '@/pages/admin/AdminPayments';
 import AdminMedia from '@/pages/admin/AdminMedia';
 import AdminReports from '@/pages/admin/AdminReports';
@@ -35,6 +37,7 @@ import AdminSettings from '@/pages/admin/AdminSettings';
 import AdminPromotions from '@/pages/admin/AdminPromotions';
 import AdminPages from '@/pages/admin/AdminPages';
 import AdminArticles from '@/pages/admin/AdminArticles';
+import AdminHelp from '@/pages/admin/AdminHelp';
 import AdminUsers from '@/pages/admin/AdminUsers';
 import AdminAgents from '@/pages/admin/AdminAgents';
 import AdminDevelopers from '@/pages/admin/AdminDevelopers';
@@ -48,143 +51,164 @@ import Messages from '@/pages/Messages';
 import AdminBookings from '@/pages/admin/AdminBookings';
 import SeoLocationListings from '@/pages/list-property/SeoLocationListings';
 import CmsPage from '@/pages/CmsPage';
+import SoldPropertiesPage from '@/pages/SoldPropertiesPage';
+import ScrollToTop from '@/components/ScrollToTop';
+
+/** Root shell so every route (marketplace, auth, admin) resets scroll on navigation. */
+function AppRoot() {
+  return (
+    <>
+      <ScrollToTop />
+      <Outlet />
+    </>
+  );
+}
 
 export const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
-  { path: '/signup', element: <SignUp /> },
-  { path: '/forgot-password', element: <ForgotPassword /> },
-  { path: '/reset-password', element: <ResetPassword /> },
-  { path: '/verify-email', element: <VerifyEmail /> },
   {
-    path: '/admin',
-    element: (
-      <ProtectedRoute requireRole="admin" fallback={<div>Loading…</div>}>
-        <AdminLayout />
-      </ProtectedRoute>
-    ),
+    element: <AppRoot />,
     children: [
-      { index: true, element: <AdminDashboard /> },
-      { path: 'properties', element: <AdminProperties /> },
-      { path: 'transactions', element: <AdminTransactions /> },
-      { path: 'packages', element: <AdminPackages /> },
-      { path: 'leads', element: <AdminLeads /> },
-      { path: 'bookings', element: <AdminBookings /> },
-      { path: 'payments', element: <AdminPayments /> },
-      { path: 'media', element: <AdminMedia /> },
-      { path: 'reports', element: <AdminReports /> },
-      { path: 'settings', element: <AdminSettings /> },
-      { path: 'promotions', element: <AdminPromotions /> },
-      { path: 'pages', element: <AdminPages /> },
-      { path: 'articles', element: <AdminArticles /> },
-      { path: 'users', element: <AdminUsers /> },
-      { path: 'agents', element: <AdminAgents /> },
-      { path: 'developers', element: <AdminDevelopers /> },
-    ],
-  },
-  {
-    element: <LayoutSwitcher />,
-    children: [
-      { path: '/', element: <HomePage /> },
-      { path: '/about', element: <CmsPage /> },
-      { path: '/careers', element: <CmsPage /> },
-      { path: '/contact', element: <CmsPage /> },
-      { path: '/help', element: <CmsPage /> },
-      { path: '/terms', element: <CmsPage /> },
-      { path: '/privacy', element: <CmsPage /> },
-      { path: '/cookies', element: <CmsPage /> },
-      { path: '/pages/:slug', element: <CmsPage /> },
-      { path: '/request-property', element: <RequestProperty /> },
-      { path: '/requests', element: <RequestsBrowse /> },
-      { path: '/requests/:id', element: <RequestDetail /> },
+      { path: '/login', element: <LoginPage /> },
+      { path: '/signup', element: <SignUp /> },
+      { path: '/forgot-password', element: <ForgotPassword /> },
+      { path: '/reset-password', element: <ResetPassword /> },
+      { path: '/verify-email', element: <VerifyEmail /> },
       {
-        path: '/dashboard/requests',
+        path: '/admin',
         element: (
-          <ProtectedRoute fallback={<div>Loading…</div>}>
-            <MyRequests />
+          <ProtectedRoute requireRole="admin" fallback={<div>Loading…</div>}>
+            <AdminLayout />
           </ProtectedRoute>
         ),
-      },
-      { path: '/sell', element: <SellProperty /> },
-      { path: '/neighbourhood', element: <NeighbourhoodHub /> },
-      { path: '/neighbourhood/:slug', element: <NeighbourhoodDetails /> },
-      { path: '/neighbourhood/:slug/:areaSlug', element: <NeighbourhoodDetails /> },
-      { path: '/articles', element: <ArticlesPage /> },
-      { path: '/articles/:slug', element: <ArticleDetailPage /> },
-      {
-        path: '/dashboard',
-        element: (
-          <ProtectedRoute fallback={<div>Loading…</div>}>
-            <MainLayoutRoute>
-              <Dashboard />
-            </MainLayoutRoute>
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/create-property',
-        element: (
-          <ProtectedRoute fallback={<div>Loading…</div>}>
-            <MainLayoutRoute>
-              <CreateProperty />
-            </MainLayoutRoute>
-          </ProtectedRoute>
-        ),
-      },
-      { path: '/properties', element: <PropertyList /> },
-      { path: '/for-sale/in/:state/:area?', element: <SeoLocationListings kind="for-sale" /> },
-      { path: '/for-rent/in/:state/:area?', element: <SeoLocationListings kind="for-rent" /> },
-      { path: '/shortlet/in/:state/:area?', element: <SeoLocationListings kind="shortlet" /> },
-      { path: '/land/in/:state/:area?', element: <SeoLocationListings kind="land" /> },
-      {
-        path: '/my-listing',
-        element: (
-          <ProtectedRoute fallback={<div>Loading…</div>}>
-            <MainLayoutRoute>
-              <ListUserProperty />
-            </MainLayoutRoute>
-          </ProtectedRoute>
-        ),
+        children: [
+          { index: true, element: <AdminDashboard /> },
+          { path: 'properties', element: <AdminProperties /> },
+          { path: 'transactions', element: <AdminTransactions /> },
+          { path: 'packages', element: <AdminPackages /> },
+          { path: 'leads', element: <AdminLeads /> },
+          { path: 'listing-reports', element: <AdminListingReports /> },
+          { path: 'listing-reviews', element: <AdminListingReviews /> },
+          { path: 'bookings', element: <AdminBookings /> },
+          { path: 'payments', element: <AdminPayments /> },
+          { path: 'media', element: <AdminMedia /> },
+          { path: 'reports', element: <AdminReports /> },
+          { path: 'settings', element: <AdminSettings /> },
+          { path: 'promotions', element: <AdminPromotions /> },
+          { path: 'pages', element: <AdminPages /> },
+          { path: 'articles', element: <AdminArticles /> },
+          { path: 'help', element: <AdminHelp /> },
+          { path: 'users', element: <AdminUsers /> },
+          { path: 'agents', element: <AdminAgents /> },
+          { path: 'developers', element: <AdminDevelopers /> },
+        ],
       },
       {
-        path: '/subscription',
-        element: (
-          <ProtectedRoute fallback={<div>Loading…</div>}>
-            <MainLayoutRoute>
-              <Subscription />
-            </MainLayoutRoute>
-          </ProtectedRoute>
-        ),
+        element: <LayoutSwitcher />,
+        children: [
+          { path: '/', element: <HomePage /> },
+          { path: '/about', element: <CmsPage /> },
+          { path: '/careers', element: <CmsPage /> },
+          { path: '/contact', element: <CmsPage /> },
+          { path: '/help', element: <CmsPage /> },
+          { path: '/terms', element: <CmsPage /> },
+          { path: '/privacy', element: <CmsPage /> },
+          { path: '/cookies', element: <CmsPage /> },
+          { path: '/pages/:slug', element: <CmsPage /> },
+          { path: '/request-property', element: <RequestProperty /> },
+          { path: '/requests', element: <RequestsBrowse /> },
+          { path: '/requests/:id', element: <RequestDetail /> },
+          {
+            path: '/dashboard/requests',
+            element: (
+              <ProtectedRoute fallback={<div>Loading…</div>}>
+                <MyRequests />
+              </ProtectedRoute>
+            ),
+          },
+          { path: '/sell', element: <SellProperty /> },
+          { path: '/neighbourhood', element: <NeighbourhoodHub /> },
+          { path: '/neighbourhood/:slug', element: <NeighbourhoodDetails /> },
+          { path: '/neighbourhood/:slug/:areaSlug', element: <NeighbourhoodDetails /> },
+          { path: '/articles', element: <ArticlesPage /> },
+          { path: '/articles/:slug', element: <ArticleDetailPage /> },
+          { path: '/sold-properties', element: <SoldPropertiesPage /> },
+          {
+            path: '/dashboard',
+            element: (
+              <ProtectedRoute fallback={<div>Loading…</div>}>
+                <MainLayoutRoute>
+                  <Dashboard />
+                </MainLayoutRoute>
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/create-property',
+            element: (
+              <ProtectedRoute fallback={<div>Loading…</div>}>
+                <MainLayoutRoute>
+                  <CreateProperty />
+                </MainLayoutRoute>
+              </ProtectedRoute>
+            ),
+          },
+          { path: '/properties', element: <PropertyList /> },
+          { path: '/for-sale/in/:state/:area?', element: <SeoLocationListings kind="for-sale" /> },
+          { path: '/for-rent/in/:state/:area?', element: <SeoLocationListings kind="for-rent" /> },
+          { path: '/shortlet/in/:state/:area?', element: <SeoLocationListings kind="shortlet" /> },
+          { path: '/land/in/:state/:area?', element: <SeoLocationListings kind="land" /> },
+          {
+            path: '/my-listing',
+            element: (
+              <ProtectedRoute fallback={<div>Loading…</div>}>
+                <MainLayoutRoute>
+                  <ListUserProperty />
+                </MainLayoutRoute>
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/subscription',
+            element: (
+              <ProtectedRoute fallback={<div>Loading…</div>}>
+                <MainLayoutRoute>
+                  <Subscription />
+                </MainLayoutRoute>
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/profile/',
+            element: (
+              <ProtectedRoute fallback={<div>Loading…</div>}>
+                <Profile />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: '/edit-profile/',
+            element: (
+              <ProtectedRoute fallback={<div>Loading…</div>}>
+                <EditProfile />
+              </ProtectedRoute>
+            ),
+          },
+          { path: '/properties/:propertyId', element: <PropertyDetailPage /> },
+          {
+            path: '/properties/:propertyId/edit',
+            element: (
+              <ProtectedRoute fallback={<div>Loading…</div>}>
+                <MainLayoutRoute>
+                  <EditPropertyPage />
+                </MainLayoutRoute>
+              </ProtectedRoute>
+            ),
+          },
+          { path: '/agents/:agentId', element: <AgentProfile /> },
+          { path: '/messages', element: <Messages /> },
+          { path: '*', element: <NotFound /> },
+        ],
       },
-      {
-        path: '/profile/',
-        element: (
-          <ProtectedRoute fallback={<div>Loading…</div>}>
-            <Profile />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: '/edit-profile/',
-        element: (
-          <ProtectedRoute fallback={<div>Loading…</div>}>
-            <EditProfile />
-          </ProtectedRoute>
-        ),
-      },
-      { path: '/properties/:propertyId', element: <PropertyDetailPage /> },
-      {
-        path: '/properties/:propertyId/edit',
-        element: (
-          <ProtectedRoute fallback={<div>Loading…</div>}>
-            <MainLayoutRoute>
-              <EditPropertyPage />
-            </MainLayoutRoute>
-          </ProtectedRoute>
-        ),
-      },
-      { path: '/agents/:agentId', element: <AgentProfile /> },
-      { path: '/messages', element: <Messages /> },
-      { path: '*', element: <NotFound /> },
     ],
   },
 ]);
