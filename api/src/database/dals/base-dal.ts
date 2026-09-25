@@ -183,17 +183,15 @@ export class BaseDAL<T extends BaseSchema, D extends Document & T> {
     }[],
     transaction?: Transaction,
   ) {
-    const bulkOps: Parameters<typeof this.model.bulkWrite>[0] = payload.map(
-      (i) => ({
-        updateOne: {
-          filter: QueryParser.parseQuery(i.filter),
-          update: {
-            ...(i.update ? { $set: i.update } : {}),
-            ...(i.unset ? { $unset: i.unset } : {}),
-          },
+    const bulkOps = payload.map((i) => ({
+      updateOne: {
+        filter: QueryParser.parseQuery(i.filter),
+        update: {
+          ...(i.update ? { $set: i.update } : {}),
+          ...(i.unset ? { $unset: i.unset } : {}),
         },
-      }),
-    );
+      },
+    })) as any;
 
     return this.model
       .bulkWrite(bulkOps, { session: transaction?.session })
@@ -222,7 +220,7 @@ export class BaseDAL<T extends BaseSchema, D extends Document & T> {
   deleteMany(
     query: ConvertStringsToArray<Partial<T>>,
     transaction?: Transaction,
-  ) {
+  ): any {
     QueryParser.parseQuery(query);
 
     return this.model.deleteMany(query, { session: transaction?.session });

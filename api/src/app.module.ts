@@ -52,7 +52,7 @@ const queuesOn = isQueuesEnabled();
     JwtModule.register({
       global: true,
       secret: config().jwt.secret,
-      signOptions: { expiresIn: config().jwt.expiresIn },
+      signOptions: { expiresIn: config().jwt.expiresIn as any },
     }),
     MongooseModule.forRootAsync({
       useFactory: () => ({
