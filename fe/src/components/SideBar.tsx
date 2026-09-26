@@ -11,28 +11,52 @@ import {
   FaSearch,
   FaMapMarkedAlt,
   FaClipboardList,
+  FaBuilding,
+  FaKey,
+  FaLayerGroup,
 } from 'react-icons/fa';
 import { useAuthStore } from '@/store/authStore';
 import { useLayoutMode } from '@/hooks/useLayoutMode';
 import Logo from '@/components/brand/Logo';
 
-const PRO_ROLES = new Set(['agent', 'developer', 'landlord', 'admin']);
+type Tab = { name: string; icon: React.ReactNode; route: string };
 
-const proTabs = [
-  { name: 'Dashboard', icon: <FaTachometerAlt />, route: '/dashboard' },
-  { name: 'Post a property', icon: <FaPlusCircle />, route: '/create-property' },
-  { name: 'My Listing', icon: <FaListAlt />, route: '/my-listing' },
-  { name: 'Subscription', icon: <FaRegCreditCard />, route: '/subscription' },
-  { name: 'Profile', icon: <FaUser />, route: '/profile' },
-];
-
-const buyerTabs = [
-  { name: 'Dashboard', icon: <FaTachometerAlt />, route: '/dashboard' },
-  { name: 'Browse', icon: <FaSearch />, route: '/properties' },
-  { name: 'My requests', icon: <FaClipboardList />, route: '/dashboard/requests' },
-  { name: 'Neighbourhoods', icon: <FaMapMarkedAlt />, route: '/neighbourhood' },
-  { name: 'Profile', icon: <FaUser />, route: '/profile' },
-];
+const TABS_BY_ROLE: Record<string, Tab[]> = {
+  user: [
+    { name: 'Dashboard', icon: <FaTachometerAlt />, route: '/dashboard' },
+    { name: 'Browse', icon: <FaSearch />, route: '/properties' },
+    { name: 'My requests', icon: <FaClipboardList />, route: '/dashboard/requests' },
+    { name: 'Neighbourhoods', icon: <FaMapMarkedAlt />, route: '/neighbourhood' },
+    { name: 'Profile', icon: <FaUser />, route: '/profile' },
+  ],
+  agent: [
+    { name: 'Dashboard', icon: <FaTachometerAlt />, route: '/dashboard' },
+    { name: 'Post a property', icon: <FaPlusCircle />, route: '/create-property' },
+    { name: 'My listings', icon: <FaListAlt />, route: '/my-listing' },
+    { name: 'Buyer requests', icon: <FaClipboardList />, route: '/requests' },
+    { name: 'Subscription', icon: <FaRegCreditCard />, route: '/subscription' },
+    { name: 'Profile', icon: <FaUser />, route: '/profile' },
+  ],
+  developer: [
+    { name: 'Dashboard', icon: <FaTachometerAlt />, route: '/dashboard' },
+    { name: 'Add unit / project', icon: <FaLayerGroup />, route: '/create-property' },
+    { name: 'Project stock', icon: <FaBuilding />, route: '/my-listing' },
+    { name: 'Subscription', icon: <FaRegCreditCard />, route: '/subscription' },
+    { name: 'Profile', icon: <FaUser />, route: '/profile' },
+  ],
+  landlord: [
+    { name: 'Dashboard', icon: <FaTachometerAlt />, route: '/dashboard' },
+    { name: 'List a rental', icon: <FaKey />, route: '/create-property' },
+    { name: 'My rentals', icon: <FaHome />, route: '/my-listing' },
+    { name: 'Subscription', icon: <FaRegCreditCard />, route: '/subscription' },
+    { name: 'Profile', icon: <FaUser />, route: '/profile' },
+  ],
+  admin: [
+    { name: 'Dashboard', icon: <FaTachometerAlt />, route: '/dashboard' },
+    { name: 'Admin console', icon: <FaBuilding />, route: '/admin' },
+    { name: 'Profile', icon: <FaUser />, route: '/profile' },
+  ],
+};
 
 type SideBarProps = {
   onClose?: () => void;
@@ -43,7 +67,7 @@ const SideBar: React.FC<SideBarProps> = ({ onClose }) => {
   const role = String(useAuthStore((state) => state.user?.role) || 'user').toLowerCase();
   const navigate = useNavigate();
   const { setLayoutMode } = useLayoutMode();
-  const tabs = PRO_ROLES.has(role) ? proTabs : buyerTabs;
+  const tabs = TABS_BY_ROLE[role] || TABS_BY_ROLE.user;
 
   const handleLogout = () => {
     logout();
@@ -67,8 +91,11 @@ const SideBar: React.FC<SideBarProps> = ({ onClose }) => {
         <Logo size="md" />
       </div>
       <div className="p-4">
+        <p className="mb-3 px-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">
+          {role === 'user' ? 'Buyer / Tenant' : role}
+        </p>
         <nav className="space-y-2">
-          <div className="mb-8">
+          <div className="mb-6">
             <button
               type="button"
               onClick={handleHomeClick}
@@ -82,7 +109,7 @@ const SideBar: React.FC<SideBarProps> = ({ onClose }) => {
           </div>
           {tabs.map((tab) => (
             <NavLink
-              key={tab.route}
+              key={tab.route + tab.name}
               to={tab.route}
               end={tab.route === '/dashboard'}
               onClick={onClose}

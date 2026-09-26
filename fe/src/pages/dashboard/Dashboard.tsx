@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import type { IconType } from 'react-icons';
 import {
   FiArrowRight,
   FiBriefcase,
   FiHome,
+  FiKey,
+  FiLayers,
   FiMapPin,
   FiPlus,
   FiSearch,
@@ -23,11 +26,262 @@ type Listing = {
   address?: string;
   city?: string;
   state?: string;
-  purpose?: string;
-  views?: number;
 };
 
-const PRO_ROLES = new Set(['agent', 'developer', 'landlord', 'admin']);
+type AccountRole = 'user' | 'agent' | 'developer' | 'landlord' | 'admin';
+
+type Action = { to: string; label: string; sub: string; icon: IconType };
+type Tile = { title: string; body: string; to: string; cta: string };
+type StatDef = {
+  label: string;
+  value: (ctx: { total: number; available: number; draftish: number; loading: boolean; error: boolean }) => string;
+  hint: string;
+  icon: IconType;
+};
+
+type RoleDesk = {
+  badge: string;
+  tagline: string;
+  primary: { to: string; label: string; icon: IconType };
+  secondary: { to: string; label: string; icon: IconType };
+  stats: StatDef[];
+  actions: Action[];
+  boardTitle: string;
+  boardHint: string;
+  showListings: boolean;
+  emptyTitle: string;
+  emptyBody: string;
+  emptyCta?: { to: string; label: string };
+  tiles?: Tile[];
+};
+
+const ROLE_DESKS: Record<AccountRole, RoleDesk> = {
+  user: {
+    badge: 'Buyer / Tenant arena',
+    tagline:
+      'Search homes, post what you need, and track agent responses — built for you, not for listers.',
+    primary: { to: '/properties', label: 'Explore listings', icon: FiSearch },
+    secondary: { to: '/request-property', label: 'Request a property', icon: FiHome },
+    stats: [
+      {
+        label: 'Your path',
+        value: () => 'Browse',
+        hint: 'Start with live inventory',
+        icon: FiSearch,
+      },
+      {
+        label: 'Neighbourhoods',
+        value: () => '50+',
+        hint: 'Guides across Nigeria',
+        icon: FiMapPin,
+      },
+      {
+        label: 'Next step',
+        value: () => 'Request',
+        hint: 'Tell agents your brief',
+        icon: FiSend,
+      },
+    ],
+    actions: [
+      { to: '/properties', label: 'Buy & rent', sub: 'Nationwide search', icon: FiSearch },
+      { to: '/request-property', label: 'Post a request', sub: 'Agents come to you', icon: FiSend },
+      { to: '/neighbourhood', label: 'Area guides', sub: 'Lifestyle before lease', icon: FiMapPin },
+      { to: '/dashboard/requests', label: 'My requests', sub: 'Track responses', icon: FiHome },
+    ],
+    boardTitle: 'Your next moves',
+    boardHint: 'No listing board — just the routes that get you a viewing.',
+    showListings: false,
+    emptyTitle: '',
+    emptyBody: '',
+    tiles: [
+      {
+        title: 'Tell the market what you need',
+        body: 'Budget, beds, area — agents respond with matches.',
+        to: '/request-property',
+        cta: 'Post request',
+      },
+      {
+        title: 'Browse live inventory',
+        body: 'For sale, rent, short let and land — Nigeria-wide.',
+        to: '/properties',
+        cta: 'Open marketplace',
+      },
+      {
+        title: 'Read the neighbourhood',
+        body: 'Depth like NPC, clarity like PropertyArena.',
+        to: '/neighbourhood',
+        cta: 'Explore guides',
+      },
+    ],
+  },
+  agent: {
+    badge: 'Agent arena',
+    tagline: 'Listings, buyer requests and featured reach — your deal desk.',
+    primary: { to: '/create-property', label: 'Post a property', icon: FiPlus },
+    secondary: { to: '/requests', label: 'Browse buyer requests', icon: FiSend },
+    stats: [
+      {
+        label: 'Your listings',
+        value: ({ total, loading, error }) => (loading ? '…' : error ? '—' : String(total)),
+        hint: 'Live inventory',
+        icon: FiBriefcase,
+      },
+      {
+        label: 'Available now',
+        value: ({ available, loading, error }) =>
+          loading ? '…' : error ? '—' : String(available),
+        hint: 'Ready for enquiries',
+        icon: FiTrendingUp,
+      },
+      {
+        label: 'In progress',
+        value: ({ draftish, loading, error }) =>
+          loading ? '…' : error ? '—' : String(draftish),
+        hint: 'Draft / other status',
+        icon: FiMapPin,
+      },
+    ],
+    actions: [
+      { to: '/create-property', label: 'List a home', sub: 'Photos, price, purpose', icon: FiPlus },
+      { to: '/my-listing', label: 'Manage listings', sub: 'Edit & feature', icon: FiBriefcase },
+      { to: '/requests', label: 'Buyer requests', sub: 'Match inventory', icon: FiSend },
+      { to: '/subscription', label: 'Grow reach', sub: 'Plans & featured slots', icon: FiTrendingUp },
+    ],
+    boardTitle: 'My agency listings',
+    boardHint: 'Status, price and place — your operations strip.',
+    showListings: true,
+    emptyTitle: 'Your board is empty',
+    emptyBody: 'Drop your first listing and ride the wave of enquiries.',
+    emptyCta: { to: '/create-property', label: 'Create listing' },
+  },
+  developer: {
+    badge: 'Developer arena',
+    tagline: 'Showcase projects and units — stock, release and sell with clarity.',
+    primary: { to: '/create-property', label: 'Add a unit / project', icon: FiLayers },
+    secondary: { to: '/subscription', label: 'Boost project reach', icon: FiTrendingUp },
+    stats: [
+      {
+        label: 'Units listed',
+        value: ({ total, loading, error }) => (loading ? '…' : error ? '—' : String(total)),
+        hint: 'Project inventory',
+        icon: FiLayers,
+      },
+      {
+        label: 'On market',
+        value: ({ available, loading, error }) =>
+          loading ? '…' : error ? '—' : String(available),
+        hint: 'Available to buyers',
+        icon: FiTrendingUp,
+      },
+      {
+        label: 'Pipeline',
+        value: ({ draftish, loading, error }) =>
+          loading ? '…' : error ? '—' : String(draftish),
+        hint: 'Coming soon / draft',
+        icon: FiBriefcase,
+      },
+    ],
+    actions: [
+      { to: '/create-property', label: 'Add inventory', sub: 'Units & estates', icon: FiPlus },
+      { to: '/my-listing', label: 'Project stock', sub: 'Edit & publish', icon: FiLayers },
+      { to: '/subscription', label: 'Feature projects', sub: 'Premium placement', icon: FiTrendingUp },
+      { to: '/sell', label: 'Sell with guidance', sub: 'Post Property flow', icon: FiHome },
+    ],
+    boardTitle: 'Project & unit inventory',
+    boardHint: 'Developer stock desk — not a general agent board.',
+    showListings: true,
+    emptyTitle: 'No units yet',
+    emptyBody: 'Add your first project unit so buyers can find you.',
+    emptyCta: { to: '/create-property', label: 'Add unit' },
+  },
+  landlord: {
+    badge: 'Landlord arena',
+    tagline: 'Rent out your properties, track availability, and fill vacancies faster.',
+    primary: { to: '/create-property', label: 'List a rental', icon: FiKey },
+    secondary: { to: '/my-listing', label: 'Manage rentals', icon: FiHome },
+    stats: [
+      {
+        label: 'Your rentals',
+        value: ({ total, loading, error }) => (loading ? '…' : error ? '—' : String(total)),
+        hint: 'Properties you own',
+        icon: FiKey,
+      },
+      {
+        label: 'Vacant / available',
+        value: ({ available, loading, error }) =>
+          loading ? '…' : error ? '—' : String(available),
+        hint: 'Open for tenants',
+        icon: FiHome,
+      },
+      {
+        label: 'Other status',
+        value: ({ draftish, loading, error }) =>
+          loading ? '…' : error ? '—' : String(draftish),
+        hint: 'Occupied / draft',
+        icon: FiMapPin,
+      },
+    ],
+    actions: [
+      { to: '/create-property', label: 'List for rent', sub: 'Flats, houses, short let', icon: FiPlus },
+      { to: '/my-listing', label: 'My rentals', sub: 'Edit availability', icon: FiKey },
+      { to: '/subscription', label: 'Get more tenants', sub: 'Featured rentals', icon: FiTrendingUp },
+      { to: '/sell', label: 'Post Property', sub: 'Guided listing path', icon: FiHome },
+    ],
+    boardTitle: 'My rental properties',
+    boardHint: 'Landlord inventory — rent-first, not agency CRM.',
+    showListings: true,
+    emptyTitle: 'No rentals listed',
+    emptyBody: 'List a vacancy and let serious tenants find you.',
+    emptyCta: { to: '/create-property', label: 'List a rental' },
+  },
+  admin: {
+    badge: 'Admin',
+    tagline: 'Platform control lives in the admin console.',
+    primary: { to: '/admin', label: 'Open admin', icon: FiBriefcase },
+    secondary: { to: '/dashboard', label: 'Stay here', icon: FiHome },
+    stats: [
+      {
+        label: 'Console',
+        value: () => 'Admin',
+        hint: 'Users, listings, payments',
+        icon: FiBriefcase,
+      },
+      {
+        label: 'Listings (you)',
+        value: ({ total, loading, error }) => (loading ? '…' : error ? '—' : String(total)),
+        hint: 'Personal listings if any',
+        icon: FiHome,
+      },
+      {
+        label: 'Available',
+        value: ({ available, loading, error }) =>
+          loading ? '…' : error ? '—' : String(available),
+        hint: 'Your available stock',
+        icon: FiTrendingUp,
+      },
+    ],
+    actions: [
+      { to: '/admin', label: 'Admin home', sub: 'Full control panel', icon: FiBriefcase },
+      { to: '/admin/properties', label: 'Moderate listings', sub: 'Approve / reject', icon: FiHome },
+      { to: '/admin/users', label: 'Users', sub: 'Roles & access', icon: FiSend },
+      { to: '/admin/reports', label: 'Reports', sub: 'Platform health', icon: FiTrendingUp },
+    ],
+    boardTitle: 'Your listings (optional)',
+    boardHint: 'Admin work happens under /admin — this is personal stock only.',
+    showListings: true,
+    emptyTitle: 'No personal listings',
+    emptyBody: 'Use the admin console for platform work.',
+    emptyCta: { to: '/admin', label: 'Go to admin' },
+  },
+};
+
+const normalizeRole = (raw?: string): AccountRole => {
+  const r = String(raw || 'user').toLowerCase();
+  if (r === 'agent' || r === 'developer' || r === 'landlord' || r === 'admin' || r === 'user') {
+    return r;
+  }
+  return 'user';
+};
 
 const WaveBand = () => (
   <svg
@@ -51,15 +305,21 @@ const WaveBand = () => (
 
 const Dashboard = () => {
   const user = useAuthStore((s) => s.user);
-  const role = String(user?.role || 'user').toLowerCase();
-  const isPro = PRO_ROLES.has(role);
+  const role = normalizeRole(user?.role);
+  const desk = ROLE_DESKS[role];
   const firstName = String(user?.name || 'there').split(' ')[0];
 
   const [rows, setRows] = useState<Listing[]>([]);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(desk.showListings);
 
   useEffect(() => {
+    if (!desk.showListings) {
+      setLoading(false);
+      setRows([]);
+      setError('');
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     PROPERTY_SERVICE.getUserProperties(1, 20)
@@ -77,17 +337,18 @@ const Dashboard = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [desk.showListings, role]);
 
   const stats = useMemo(() => {
     const available = rows.filter((r) => (r.status || '').toLowerCase() === 'available').length;
-    const draftish = rows.length - available;
-    return { total: rows.length, available, draftish };
+    return { total: rows.length, available, draftish: rows.length - available };
   }, [rows]);
+
+  const PrimaryIcon = desk.primary.icon;
+  const SecondaryIcon = desk.secondary.icon;
 
   return (
     <div className="relative min-h-full overflow-hidden bg-[#f3f7f4]">
-      {/* Atmosphere */}
       <div
         className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-[#5dbb46]/20 blur-3xl"
         aria-hidden
@@ -97,7 +358,6 @@ const Dashboard = () => {
         aria-hidden
       />
 
-      {/* Wavy hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0b3d2e] via-[#145c3f] to-[#1a7a4c] text-white">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.12]"
@@ -110,77 +370,34 @@ const Dashboard = () => {
         />
         <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-10 sm:px-6 lg:px-8">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-200/90">
-            Your arena
+            {desk.badge}
           </p>
           <h1 className="mt-3 max-w-2xl font-serif text-3xl font-bold leading-tight tracking-tight sm:text-4xl md:text-5xl">
             Welcome back, {firstName}.
           </h1>
-          <p className="mt-3 max-w-xl text-sm text-emerald-50/85 sm:text-base">
-            {isPro
-              ? 'Listings, leads and neighbourhood demand — one wavy strip away from your next deal.'
-              : 'Save searches, post requests, and move from browsing to booked viewing without the noise.'}
-          </p>
+          <p className="mt-3 max-w-xl text-sm text-emerald-50/85 sm:text-base">{desk.tagline}</p>
 
           <div className="mt-7 flex flex-wrap gap-3">
-            {isPro ? (
-              <>
-                <Link
-                  to="/create-property"
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#0b3d2e] shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-emerald-50"
-                >
-                  <FiPlus /> Post a property
-                </Link>
-                <Link
-                  to="/requests"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
-                >
-                  <FiSend /> Browse buyer requests
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/properties"
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#0b3d2e] shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-emerald-50"
-                >
-                  <FiSearch /> Explore listings
-                </Link>
-                <Link
-                  to="/request-property"
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
-                >
-                  <FiHome /> Request a property
-                </Link>
-              </>
-            )}
+            <Link
+              to={desk.primary.to}
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#0b3d2e] shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-emerald-50"
+            >
+              <PrimaryIcon /> {desk.primary.label}
+            </Link>
+            <Link
+              to={desk.secondary.to}
+              className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
+            >
+              <SecondaryIcon /> {desk.secondary.label}
+            </Link>
           </div>
         </div>
         <WaveBand />
       </section>
 
       <div className="relative z-10 mx-auto -mt-6 max-w-6xl space-y-8 px-4 pb-14 sm:px-6 lg:px-8">
-        {/* Pulse stats */}
         <div className="grid gap-4 sm:grid-cols-3">
-          {[
-            {
-              label: isPro ? 'Your listings' : 'Saved journey',
-              value: loading ? '…' : error ? '—' : String(stats.total),
-              hint: isPro ? 'Live inventory' : 'Start with a request',
-              icon: FiBriefcase,
-            },
-            {
-              label: isPro ? 'Available now' : 'Neighbourhoods',
-              value: loading ? '…' : error ? '—' : isPro ? String(stats.available) : '50+',
-              hint: isPro ? 'Ready for enquiries' : 'Guides across Nigeria',
-              icon: FiTrendingUp,
-            },
-            {
-              label: isPro ? 'In progress' : 'Next step',
-              value: loading ? '…' : error ? '—' : isPro ? String(stats.draftish) : 'Request',
-              hint: isPro ? 'Draft / other status' : 'Tell agents what you need',
-              icon: FiMapPin,
-            },
-          ].map((card, i) => (
+          {desk.stats.map((card, i) => (
             <div
               key={card.label}
               className="group relative overflow-hidden rounded-2xl border border-emerald-900/5 bg-white/90 p-5 shadow-[0_18px_40px_-28px_rgba(11,61,46,0.45)] backdrop-blur transition duration-300 hover:-translate-y-1"
@@ -192,7 +409,9 @@ const Dashboard = () => {
                   <p className="text-xs font-semibold uppercase tracking-wider text-emerald-800/55">
                     {card.label}
                   </p>
-                  <p className="mt-2 font-serif text-3xl font-bold text-[#0b3d2e]">{card.value}</p>
+                  <p className="mt-2 font-serif text-3xl font-bold text-[#0b3d2e]">
+                    {card.value({ ...stats, loading, error: Boolean(error) })}
+                  </p>
                   <p className="mt-1 text-xs text-gray-500">{card.hint}</p>
                 </div>
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0b3d2e]/8 text-[#0b3d2e]">
@@ -203,24 +422,10 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Action ribbon — NPC/PropertyPro density, PropertyArena personality */}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {(isPro
-            ? [
-                { to: '/create-property', label: 'List a home', sub: 'Photos, price, purpose', icon: FiPlus },
-                { to: '/my-listing', label: 'Manage listings', sub: 'Edit & feature', icon: FiBriefcase },
-                { to: '/subscription', label: 'Grow reach', sub: 'Plans & featured slots', icon: FiTrendingUp },
-                { to: '/sell', label: 'Post Property', sub: 'Guided seller path', icon: FiHome },
-              ]
-            : [
-                { to: '/properties', label: 'Buy & rent', sub: 'Nationwide search', icon: FiSearch },
-                { to: '/request-property', label: 'Post a request', sub: 'Agents come to you', icon: FiSend },
-                { to: '/neighbourhood', label: 'Area guides', sub: 'Lifestyle before lease', icon: FiMapPin },
-                { to: '/dashboard/requests', label: 'My requests', sub: 'Track responses', icon: FiHome },
-              ]
-          ).map((action) => (
+          {desk.actions.map((action) => (
             <Link
-              key={action.to}
+              key={`${action.to}-${action.label}`}
               to={action.to}
               className="flex items-center gap-3 rounded-2xl border border-dashed border-emerald-800/15 bg-[#0b3d2e]/[0.03] px-4 py-3 transition hover:border-brand-green hover:bg-white hover:shadow-md"
             >
@@ -236,36 +441,29 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {error && (
+        {error && desk.showListings && (
           <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </p>
         )}
 
-        {/* Listings / empty state */}
         <section className="overflow-hidden rounded-3xl border border-emerald-900/5 bg-white shadow-[0_24px_60px_-36px_rgba(11,61,46,0.55)]">
           <div className="flex flex-wrap items-end justify-between gap-3 border-b border-emerald-900/5 px-5 py-4 sm:px-6">
             <div>
-              <h2 className="font-serif text-xl font-bold text-[#0b3d2e]">
-                {isPro ? 'My properties' : 'Your next moves'}
-              </h2>
-              <p className="mt-0.5 text-xs text-gray-500">
-                {isPro
-                  ? 'A cleaner Operations strip than classic Nigeria portals — status, price, place.'
-                  : 'No cluttered lead tables — just the paths that get you a viewing.'}
-              </p>
+              <h2 className="font-serif text-xl font-bold text-[#0b3d2e]">{desk.boardTitle}</h2>
+              <p className="mt-0.5 text-xs text-gray-500">{desk.boardHint}</p>
             </div>
-            {isPro && (
+            {desk.showListings && desk.emptyCta && (
               <Link
-                to="/create-property"
+                to={desk.emptyCta.to}
                 className="text-sm font-bold text-brand-green-dark hover:underline"
               >
-                Post a property
+                {desk.emptyCta.label}
               </Link>
             )}
           </div>
 
-          {isPro ? (
+          {desk.showListings ? (
             <div className="overflow-x-auto">
               <table className="min-w-full text-left text-sm">
                 <thead className="bg-[#f3f7f4] text-[11px] uppercase tracking-wider text-emerald-900/50">
@@ -286,7 +484,10 @@ const Dashboard = () => {
                         {row.title}
                       </td>
                       <td className="px-5 py-3.5 text-gray-600 sm:px-6">
-                        {row.location || row.address || [row.city, row.state].filter(Boolean).join(', ') || '—'}
+                        {row.location ||
+                          row.address ||
+                          [row.city, row.state].filter(Boolean).join(', ') ||
+                          '—'}
                       </td>
                       <td className="px-5 py-3.5 font-medium text-[#0b3d2e] sm:px-6">
                         {row.price != null ? `₦${Number(row.price).toLocaleString()}` : '—'}
@@ -302,23 +503,26 @@ const Dashboard = () => {
                     <tr>
                       <td colSpan={4} className="px-5 py-12 text-center sm:px-6">
                         <p className="font-serif text-lg font-bold text-[#0b3d2e]">
-                          Your board is empty
+                          {desk.emptyTitle}
                         </p>
-                        <p className="mt-1 text-sm text-gray-500">
-                          Drop your first listing and ride the wave of enquiries.
-                        </p>
-                        <Link
-                          to="/create-property"
-                          className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#0b3d2e] px-4 py-2 text-sm font-bold text-white hover:bg-[#145c3f]"
-                        >
-                          <FiPlus /> Create listing
-                        </Link>
+                        <p className="mt-1 text-sm text-gray-500">{desk.emptyBody}</p>
+                        {desk.emptyCta && (
+                          <Link
+                            to={desk.emptyCta.to}
+                            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#0b3d2e] px-4 py-2 text-sm font-bold text-white hover:bg-[#145c3f]"
+                          >
+                            <FiPlus /> {desk.emptyCta.label}
+                          </Link>
+                        )}
                       </td>
                     </tr>
                   )}
                   {loading && (
                     <tr>
-                      <td colSpan={4} className="px-5 py-10 text-center text-sm text-gray-500 sm:px-6">
+                      <td
+                        colSpan={4}
+                        className="px-5 py-10 text-center text-sm text-gray-500 sm:px-6"
+                      >
                         Loading your listings…
                       </td>
                     </tr>
@@ -328,32 +532,15 @@ const Dashboard = () => {
             </div>
           ) : (
             <div className="grid gap-4 p-5 sm:grid-cols-3 sm:p-6">
-              {[
-                {
-                  title: 'Tell the market what you need',
-                  body: 'Budget, beds, area — agents respond with matches.',
-                  to: '/request-property',
-                  cta: 'Post request',
-                },
-                {
-                  title: 'Browse live inventory',
-                  body: 'For sale, rent, short let and land — Nigeria-wide.',
-                  to: '/properties',
-                  cta: 'Open marketplace',
-                },
-                {
-                  title: 'Read the neighbourhood',
-                  body: 'Guides shaped like NPC depth, with PropertyArena clarity.',
-                  to: '/neighbourhood',
-                  cta: 'Explore guides',
-                },
-              ].map((tile) => (
+              {(desk.tiles || []).map((tile) => (
                 <div
                   key={tile.to}
                   className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#f3f7f4] to-white p-5 ring-1 ring-emerald-900/5"
                 >
                   <div className="absolute -bottom-8 -right-6 h-24 w-24 rounded-full bg-[#5dbb46]/15" />
-                  <h3 className="relative font-serif text-lg font-bold text-[#0b3d2e]">{tile.title}</h3>
+                  <h3 className="relative font-serif text-lg font-bold text-[#0b3d2e]">
+                    {tile.title}
+                  </h3>
                   <p className="relative mt-2 text-sm text-gray-600">{tile.body}</p>
                   <Link
                     to={tile.to}
