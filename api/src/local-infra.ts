@@ -23,7 +23,11 @@ async function isPortOpen(host: string, port: number): Promise<boolean> {
  * Keeps developer testing unblocked without system installs.
  */
 export async function ensureLocalInfra(): Promise<void> {
-  if (process.env.SKIP_LOCAL_INFRA === 'true') {
+  // Production / explicit skip: never boot memory Mongo/Redis (needs make/jemalloc).
+  if (
+    process.env.SKIP_LOCAL_INFRA === 'true' ||
+    process.env.NODE_ENV === 'production'
+  ) {
     return;
   }
 
