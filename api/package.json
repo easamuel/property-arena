@@ -111,5 +111,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "redisMemoryServer": {
+    "disablePostinstall": true
   }
 }

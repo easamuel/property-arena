@@ -1,5 +1,4 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { RedisMemoryServer } from 'redis-memory-server';
 import * as net from 'net';
 
 async function isPortOpen(host: string, port: number): Promise<boolean> {
@@ -64,17 +63,27 @@ export async function ensureLocalInfra(): Promise<void> {
       );
       process.env.SKIP_REDIS = 'true';
     } else {
-      console.log('[local-infra] Redis not found — starting redis-memory-server…');
-      const redis = new RedisMemoryServer({
-        instance: { port: redisPort },
-      });
-      await redis.start();
-      const host = await redis.getHost();
-      const port = await redis.getPort();
-      process.env.REDIS_HOST = host;
-      process.env.REDIS_PORT = String(port);
-      (global as any).__PA_REDIS_MEMORY__ = redis;
-      console.log(`[local-infra] Redis memory ready at ${host}:${port}`);
+      try {
+        // Dynamic import so servers without make/build tools can npm install.
+        const { RedisMemoryServer } = await import('redis-memory-server');
+        console.log('[local-infra] Redis not found — starting redis-memory-server…');
+        const redis = new RedisMemoryServer({
+          instance: { port: redisPort },
+        });
+        await redis.start();
+        const host = await redis.getHost();
+        const port = await redis.getPort();
+        process.env.REDIS_HOST = host;
+        process.env.REDIS_PORT = String(port);
+        (global as any).__PA_REDIS_MEMORY__ = redis;
+        console.log(`[local-infra] Redis memory ready at ${host}:${port}`);
+      } catch (err) {
+        console.warn(
+          '[local-infra] Could not start redis-memory-server — set REDIS_HOST/PORT or install Redis.',
+          err instanceof Error ? err.message : err,
+        );
+        process.env.SKIP_REDIS = 'true';
+      }
     }
   } else {
     console.log('[local-infra] Using existing Redis');
