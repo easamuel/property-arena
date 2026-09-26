@@ -79,7 +79,6 @@ const NAV: NavItem[] = [
   },
   { type: 'link', label: 'Short Let', to: '/properties?purpose=shortlet&location=Nigeria' },
   { type: 'link', label: 'Land', to: '/properties?purpose=sale&propertyType=land&location=Nigeria' },
-  { type: 'link', label: 'Post Property', to: '/sell' },
   {
     type: 'mega',
     label: 'Explore',
@@ -236,12 +235,6 @@ const MarketplaceHeader = () => {
             {theme === 'dark' ? <FaSun className="text-amber-400" /> : <FaMoon />}
           </button>
           <Link
-            to={isAuthenticated ? '/create-property' : '/sell'}
-            className="hidden rounded-lg bg-brand-green px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-green-dark sm:inline-flex"
-          >
-            Post Property
-          </Link>
-          <Link
             to={isAuthenticated ? '/dashboard' : '/login?redirect=/dashboard'}
             aria-label="Saved"
             className="rounded-full p-2 text-ink-muted transition hover:bg-chip hover:text-brand-red"
@@ -334,13 +327,6 @@ const MarketplaceHeader = () => {
                 </div>
               );
             })}
-            <Link
-              to={isAuthenticated ? '/create-property' : '/sell'}
-              onClick={closeAll}
-              className="mt-3 rounded-lg bg-brand-green px-4 py-3 text-center text-sm font-semibold text-white"
-            >
-              Post Property
-            </Link>
             {!isAuthenticated && (
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <Link
