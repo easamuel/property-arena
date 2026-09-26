@@ -35,10 +35,18 @@ export default function FaqSection({
     })),
   };
 
+  const nested = className.includes('!py-0') || className.includes('!bg-transparent');
+
   return (
-    <section className={`border-t border-line bg-surface-muted py-14 sm:py-16 ${className}`}>
+    <section
+      className={
+        nested
+          ? className
+          : `border-t border-line bg-surface-muted py-14 sm:py-16 ${className}`
+      }
+    >
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+      <div className={nested ? '' : 'mx-auto max-w-3xl px-4 sm:px-6 lg:px-8'}>
         <h2 className="text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{title}</h2>
         {subtitle ? <p className="mt-2 text-sm text-ink-secondary">{subtitle}</p> : null}
         <div className="mt-8 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface-elevated">

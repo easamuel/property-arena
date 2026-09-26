@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   FaBath,
@@ -32,6 +32,14 @@ import { useToast } from '@/hooks/useToast';
 import { MEDIA, galleryAt } from '@/data/media';
 import { buildSeoPath, labelToSlug } from '@/lib/seo';
 import { getDemoListingById, type DemoListing } from '@/data/demo-listings';
+import FaqSection from '@/components/seo/FaqSection';
+import {
+  buildListingFaqs,
+  buildListingFeatures,
+  buildListingSeoHubs,
+  buildRichListingDescription,
+} from '@/lib/listingInsights';
+import { getGuideInsights } from '@/lib/guideInsights';
 
 const FALLBACK_MEDIA = [
   MEDIA.duplex,
@@ -189,29 +197,52 @@ const PropertyDetailPage = () => {
     .join('')
     .slice(0, 2)
     .toUpperCase();
-  const description =
+
+  const areaName = demoListing?.area || location.split(',')[0]?.trim() || '';
+  const stateName =
+    demoListing?.state ||
+    location
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(-1)[0] ||
+    'Lagos';
+
+  const insightInput = {
+    title,
+    location,
+    area: areaName,
+    state: stateName,
+    type: String(type),
+    purpose: String(purpose),
+    price,
+    beds,
+    baths,
+    landArea: landArea || undefined,
+  };
+
+  const rawDesc =
     apiProperty?.description ||
-    (demoListing
-      ? `${demoListing.title} in ${demoListing.location}. Listed by ${demoListing.agent} on PropertyArena — enquire for viewing, documents and exact pin. Always verify title and identity before any payment.`
-      : 'Listing details will appear here once published.');
-  const features = apiProperty?.features?.length
-    ? apiProperty.features
-    : demoListing
-      ? [
-          demoListing.purpose === 'shortlet' ? 'Furnished for short stays' : 'Ready for viewing',
-          'Photos from listing agent',
-          'Enquire for documents',
-          'Neighbourhood guide available',
-          'WhatsApp & call contact',
-          'PropertyArena safety tips apply',
-        ]
-      : [
-          'En-suite bedrooms',
-          'Fitted kitchen',
-          'Balcony',
-          '24/7 security',
-          'Parking',
-        ];
+    (demoListing ? `${demoListing.title} in ${demoListing.location}.` : '');
+  const description = buildRichListingDescription({
+    ...insightInput,
+    rawDescription: rawDesc,
+    rawFeatures: apiProperty?.features,
+  });
+  const features = buildListingFeatures({
+    ...insightInput,
+    rawFeatures: apiProperty?.features?.length
+      ? apiProperty.features
+      : demoListing
+        ? [
+            demoListing.purpose === 'shortlet' ? 'Furnished for short stays' : 'Ready for viewing',
+            'Photos from listing agent',
+          ]
+        : [],
+  });
+  const listingFaqs = buildListingFaqs(insightInput);
+  const seoHubs = buildListingSeoHubs(insightInput);
+  const areaInsights = getGuideInsights(areaName || stateName, stateName);
 
   const land = isLandType(String(type), String(purpose));
   const purposeLabel =
@@ -224,14 +255,13 @@ const PropertyDetailPage = () => {
     if (/commercial|office|shop/i.test(t)) return 'Commercial properties';
     return `${t}s`;
   })();
-  const areaName = demoListing?.area || location.split(',')[0]?.trim() || '';
-  const stateName = demoListing?.state || location.split(',').map((s) => s.trim()).filter(Boolean).slice(-1)[0] || 'Lagos';
   const cityHint = areaName || stateName;
   const stateHint = stateName;
   const neighbourhoodHref = areaName
     ? `/neighbourhood/${labelToSlug(stateName)}/${labelToSlug(areaName)}`
     : `/neighbourhood/${labelToSlug(stateName)}`;
   const refId = (propertyId || 'PA-LISTING').slice(0, 16).toUpperCase();
+  const seoDescription = `${categoryLabel} in ${location}. ${description.replace(/\s+/g, ' ').slice(0, 140)}`;
 
   useEffect(() => {
     if (!form.message) {
@@ -353,8 +383,8 @@ const PropertyDetailPage = () => {
   return (
     <div className="min-h-screen bg-surface-muted">
       <SeoHead
-        title={`${categoryLabel}: ${title} — ${location}`}
-        description={description.slice(0, 160)}
+        title={`${categoryLabel} in ${cityHint}, ${stateHint} | ${title}`}
+        description={seoDescription}
         path={`/properties/${propertyId || ''}`}
         image={media[0]}
       />
@@ -548,10 +578,12 @@ const PropertyDetailPage = () => {
 
             {/* About */}
             <section className="rounded-2xl bg-surface-elevated p-5 shadow-sm ring-1 ring-line sm:p-6">
-              <h2 className="text-lg font-extrabold text-ink">About this property</h2>
-              <p className="mt-3 text-sm leading-relaxed text-ink-secondary">
+              <h2 className="text-lg font-extrabold text-ink">
+                About this {String(type).toLowerCase()} {purposeLabel} in {cityHint}
+              </h2>
+              <div className="mt-3 space-y-3 text-sm leading-relaxed text-ink-secondary whitespace-pre-line">
                 {descOpen ? description : shortDesc}
-              </p>
+              </div>
               {description.length > 280 && (
                 <button
                   type="button"
@@ -561,11 +593,18 @@ const PropertyDetailPage = () => {
                   {descOpen ? 'Show less' : 'Show full description'}
                 </button>
               )}
+              <p className="mt-4 text-xs text-ink-muted">
+                Searching for {String(type).toLowerCase()} {purposeLabel} in {cityHint}, {stateHint}? This PropertyArena
+                listing is marketed for serious enquiries — always verify documents before payment.
+              </p>
             </section>
 
             {/* Features */}
             <section className="rounded-2xl bg-surface-elevated p-5 shadow-sm ring-1 ring-line sm:p-6">
-              <h2 className="text-lg font-extrabold text-ink">Features and amenities</h2>
+              <h2 className="text-lg font-extrabold text-ink">Highlights &amp; what to confirm</h2>
+              <p className="mt-1 text-sm text-ink-muted">
+                Practical checks for {String(type).toLowerCase()} {purposeLabel} in {cityHint} — not just a badge.
+              </p>
               <ul className="mt-4 grid gap-2 sm:grid-cols-2">
                 {features.map((f) => (
                   <li
@@ -578,6 +617,37 @@ const PropertyDetailPage = () => {
               </ul>
             </section>
 
+            {/* Area snapshot — NPC-style local context */}
+            <section className="rounded-2xl bg-surface-elevated p-5 shadow-sm ring-1 ring-line sm:p-6">
+              <h2 className="text-lg font-extrabold text-ink">Living in {cityHint}, {stateHint}</h2>
+              <p className="mt-1 text-sm text-ink-muted">
+                Local context for people comparing {String(type).toLowerCase()} {purposeLabel} in {cityHint}.
+              </p>
+              <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                {(
+                  [
+                    ['Lifestyle', areaInsights.Lifestyle],
+                    ['Access', areaInsights.Access],
+                    ['Schools', areaInsights.Schools],
+                    ['Security', areaInsights.Security],
+                  ] as const
+                ).map(([label, body]) => (
+                  <div key={label}>
+                    <h3 className="text-sm font-bold text-ink">{label}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-ink-secondary">
+                      {body.split('\n\n')[0]}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <Link
+                to={neighbourhoodHref}
+                className="mt-5 inline-block text-sm font-semibold text-brand-green hover:underline"
+              >
+                Full area guide for {cityHint} →
+              </Link>
+            </section>
+
             {/* Map / location */}
             <section className="rounded-2xl bg-surface-elevated p-5 shadow-sm ring-1 ring-line sm:p-6">
               <h2 className="text-lg font-extrabold text-ink">Property details</h2>
@@ -586,14 +656,9 @@ const PropertyDetailPage = () => {
                   <FaMapMarkerAlt className="mb-2 text-2xl text-brand-red" />
                   <p className="text-sm font-semibold text-ink">{location}</p>
                   <p className="mt-1 max-w-sm px-4 text-xs text-ink-muted">
-                    Exact pin shared after you enquire — keeps owners safe while you get area context.
+                    Exact pin shared after you enquire — keeps owners safe while you get area context for{' '}
+                    {cityHint}.
                   </p>
-                  <Link
-                    to={neighbourhoodHref}
-                    className="mt-3 text-sm font-semibold text-brand-green hover:underline"
-                  >
-                    Area guide for {cityHint} →
-                  </Link>
                 </div>
               </div>
               <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
@@ -605,7 +670,44 @@ const PropertyDetailPage = () => {
                   <dt className="text-ink-muted">Status</dt>
                   <dd className="font-semibold text-ink">{apiProperty?.status || 'Available'}</dd>
                 </div>
+                <div className="flex justify-between gap-2 rounded-lg bg-chip px-3 py-2">
+                  <dt className="text-ink-muted">Purpose</dt>
+                  <dd className="font-semibold capitalize text-ink">{purposeLabel}</dd>
+                </div>
+                <div className="flex justify-between gap-2 rounded-lg bg-chip px-3 py-2">
+                  <dt className="text-ink-muted">Type</dt>
+                  <dd className="font-semibold text-ink">{type}</dd>
+                </div>
               </dl>
+            </section>
+
+            <div className="rounded-2xl bg-surface-elevated p-5 shadow-sm ring-1 ring-line sm:p-6">
+              <FaqSection
+                title={`FAQ — ${typePlural} ${purposeLabel} in ${cityHint}`}
+                subtitle={`Straight answers for people searching ${String(type).toLowerCase()} ${purposeLabel} in ${cityHint}, ${stateHint}.`}
+                items={listingFaqs}
+                className="!border-0 !bg-transparent !py-0"
+              />
+            </div>
+
+            {/* SEO keyword hubs */}
+            <section className="rounded-2xl bg-surface-elevated p-5 shadow-sm ring-1 ring-line sm:p-6">
+              <h2 className="text-lg font-extrabold text-ink">Explore related searches</h2>
+              <p className="mt-1 text-sm text-ink-muted">
+                Keep browsing {String(type).toLowerCase()} {purposeLabel} around {cityHint} and {stateHint}.
+              </p>
+              <ul className="mt-4 flex flex-wrap gap-2">
+                {seoHubs.map((link) => (
+                  <li key={link.to + link.label}>
+                    <Link
+                      to={link.to}
+                      className="inline-flex rounded-full bg-chip px-3 py-1.5 text-xs font-semibold text-ink-secondary ring-1 ring-line transition hover:text-brand-green"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </section>
 
             {/* Reviews */}
@@ -786,24 +888,13 @@ const PropertyDetailPage = () => {
             <div className="rounded-2xl bg-surface-elevated p-4 text-sm shadow-sm ring-1 ring-line">
               <p className="font-bold text-ink">Useful links</p>
               <ul className="mt-2 space-y-1.5 text-brand-green">
-                <li>
-                  <Link
-                    to={buildSeoPath('for-sale', stateHint, cityHint)}
-                    className="hover:underline"
-                  >
-                    More in {cityHint}
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/request-property" className="hover:underline">
-                    Request a similar property
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/subscription" className="hover:underline">
-                    Advertise your property
-                  </Link>
-                </li>
+                {seoHubs.map((link) => (
+                  <li key={link.to + link.label}>
+                    <Link to={link.to} className="hover:underline">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           </aside>

@@ -196,9 +196,21 @@ export async function seedNationwideProperties(app: INestApplication): Promise<v
       ? `${propertyType === PROPERTY_TYPE.LAND ? 'Plot of land' : propertyType === PROPERTY_TYPE.CO_WORKING_SPACE ? 'Co-working space' : 'Commercial space'} in ${spot.area}`
       : `${beds} Bedroom home ${purposeLabel} — ${spot.area}`;
 
+    const descBits = isLandOrCommercial
+      ? [
+          `${propertyType === PROPERTY_TYPE.LAND ? 'Land for sale' : 'Commercial property'} in ${spot.area}, ${spot.state}.`,
+          `Compare access, title and pricing with similar inventory across ${spot.state} on PropertyArena.`,
+          `Enquire for survey notes, viewing and document checklist before you commit.`,
+        ]
+      : [
+          `${beds} bedroom home ${purposeLabel.toLowerCase()} in ${spot.area}, ${spot.state}.`,
+          `Listed for buyers and renters searching homes ${purposeLabel.toLowerCase()} in ${spot.area}.`,
+          `Request a viewing, confirm inclusions, and verify identity before any payment.`,
+        ];
+
     docs.push({
       title,
-      description: `Verified listing in ${spot.area}, ${spot.state}. Browse more homes across Nigeria on PropertyArena.`,
+      description: descBits.join(' '),
       price,
       currency: CURRENCY_TYPE.NGN,
       priceFrequency:
@@ -215,7 +227,21 @@ export async function seedNationwideProperties(app: INestApplication): Promise<v
       bedroom: beds,
       landArea: isLandOrCommercial ? String(300 + (i % 8) * 50) : String(140 + (i % 6) * 35),
       media: [{ url: SEED_IMAGES[i % SEED_IMAGES.length], type: 'image' }],
-      features: ['Verified', 'Nationwide'],
+      features: isLandOrCommercial
+        ? [
+            'Title discussion on enquiry',
+            'Access to confirm on site',
+            `Located in ${spot.area}`,
+            'Survey recommended',
+            'PropertyArena safety tips',
+          ]
+        : [
+            `${beds} bedrooms`,
+            'Viewing by appointment',
+            'Security to confirm',
+            `Homes in ${spot.area}`,
+            'PropertyArena safety tips',
+          ],
       owner: ownerId,
       isDeleted: false,
       propertyId: `SEED-${String(i + 1).padStart(4, '0')}`,
