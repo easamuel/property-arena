@@ -175,8 +175,6 @@ const GUIDES = [
   },
 ];
 
-];
-
 const formatPrice = (price: number | string | undefined) => {
   if (price == null) return 'Price on request';
   if (typeof price === 'number') return `₦${price.toLocaleString()}`;
