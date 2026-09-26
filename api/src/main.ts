@@ -64,13 +64,17 @@ async function bootstrap() {
   server.setTimeout(1200000);
   logger.log('Server started on port ' + listenPort);
 
-  if (process.env.NODE_ENV !== 'production') {
+  // Dev seeds by default; production only when SEED_ON_BOOT=true (run once, then turn off).
+  const shouldSeed =
+    process.env.SEED_ON_BOOT === 'true' ||
+    (process.env.NODE_ENV !== 'production' && process.env.SEED_ON_BOOT !== 'false');
+  if (shouldSeed) {
     try {
       await seedDevData(app);
       await seedNationwideProperties(app);
-      logger.log('Dev seed ready (admin + plans + properties)');
+      logger.log('Seed ready (admin + plans + properties)');
     } catch (err) {
-      logger.warn('Dev seed skipped: ' + (err as Error).message);
+      logger.warn('Seed skipped: ' + (err as Error).message);
     }
   }
 }
