@@ -4,7 +4,7 @@ import StatusBadge from '@/components/admin/StatusBadge';
 import { ADMIN_SERVICE, AdminUser } from '@/services/admin';
 import { FiUsers } from 'react-icons/fi';
 
-const ROLES = ['user', 'agent', 'developer', 'landlord', 'admin'];
+const ROLES = ['user', 'agent', 'agency', 'developer', 'landlord', 'admin'];
 
 const AdminUsers = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);

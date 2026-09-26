@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import type { IconType } from 'react-icons';
 import {
   FiArrowRight,
@@ -15,6 +15,7 @@ import {
 } from 'react-icons/fi';
 import { PROPERTY_SERVICE } from '@/services/property';
 import { useAuthStore } from '@/store/authStore';
+import { isWorkspaceRole } from '@/lib/workspace';
 
 type Listing = {
   id?: string;
@@ -308,13 +309,14 @@ const Dashboard = () => {
   const role = normalizeRole(user?.role);
   const desk = ROLE_DESKS[role];
   const firstName = String(user?.name || 'there').split(' ')[0];
+  const shouldUseWorkspace = isWorkspaceRole(user?.role);
 
   const [rows, setRows] = useState<Listing[]>([]);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(desk.showListings);
+  const [loading, setLoading] = useState(desk.showListings && !shouldUseWorkspace);
 
   useEffect(() => {
-    if (!desk.showListings) {
+    if (shouldUseWorkspace || !desk.showListings) {
       setLoading(false);
       setRows([]);
       setError('');
@@ -337,12 +339,16 @@ const Dashboard = () => {
     return () => {
       cancelled = true;
     };
-  }, [desk.showListings, role]);
+  }, [desk.showListings, role, shouldUseWorkspace]);
 
   const stats = useMemo(() => {
     const available = rows.filter((r) => (r.status || '').toLowerCase() === 'available').length;
     return { total: rows.length, available, draftish: rows.length - available };
   }, [rows]);
+
+  if (shouldUseWorkspace) {
+    return <Navigate to="/workspace" replace />;
+  }
 
   const PrimaryIcon = desk.primary.icon;
   const SecondaryIcon = desk.secondary.icon;

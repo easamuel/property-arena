@@ -21,15 +21,21 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
 
   const canSwitchLayout =
     isAuthenticated &&
-    ['admin', 'agent', 'landlord', 'developer'].includes(String(user?.role || '').toLowerCase());
+    ['admin', 'agent', 'landlord', 'developer', 'agency'].includes(
+      String(user?.role || '').toLowerCase(),
+    );
 
   const handleSwitchLayout = () => {
-    const next = layoutMode === 'main' ? 'user' : 'main';
-    setLayoutMode(next);
+    const role = String(user?.role || '').toLowerCase();
+    const isPro = ['agent', 'landlord', 'developer', 'agency'].includes(role);
     closeDropdown();
-    if (next === 'user') {
+    if (layoutMode === 'main' || (isPro && window.location.pathname.startsWith('/workspace'))) {
+      setLayoutMode('user');
       navigate('/');
+      return;
     }
+    setLayoutMode('main');
+    if (isPro) navigate('/workspace');
   };
 
   return (
@@ -99,7 +105,13 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
                           My profile
                         </Link>
                         <Link
-                          to="/dashboard"
+                          to={
+                            ['agent', 'landlord', 'developer', 'agency'].includes(
+                              String(user?.role || '').toLowerCase(),
+                            )
+                              ? '/workspace'
+                              : '/dashboard'
+                          }
                           onClick={closeDropdown}
                           className="rounded-xl px-3 py-2 text-sm font-medium transition hover:bg-chip"
                         >

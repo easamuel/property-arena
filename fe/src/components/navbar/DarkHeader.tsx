@@ -18,7 +18,13 @@ const NAV_LINKS = [
 const DarkHeader = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isAuthenticated, user } = useAuth();
-  const accountTo = user?.role === 'admin' ? '/admin' : '/dashboard';
+  const role = String(user?.role || '').toLowerCase();
+  const accountTo =
+    role === 'admin'
+      ? '/admin'
+      : ['agent', 'developer', 'landlord', 'agency'].includes(role)
+        ? '/workspace'
+        : '/dashboard';
 
   return (
     <header className="sticky top-0 z-50 bg-[#0B1B3A] text-white">
@@ -35,7 +41,7 @@ const DarkHeader = () => {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
-            to={isAuthenticated ? '/dashboard' : '/login?redirect=/dashboard'}
+            to={isAuthenticated ? accountTo : `/login?redirect=${accountTo}`}
             aria-label="Saved properties"
             className="rounded-full p-2 text-white/90 transition hover:bg-white/10"
           >

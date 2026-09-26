@@ -123,8 +123,13 @@ const MarketplaceHeader = () => {
   const navRef = useRef<HTMLElement>(null);
   const initials = user?.name?.[0] || user?.email?.[0] || 'U';
   const role = String(user?.role || '').toLowerCase();
-  const accountTo = role === 'admin' ? '/admin' : '/dashboard';
-  const canUseWorkspace = ['agent', 'developer', 'landlord', 'admin'].includes(role);
+  const accountTo =
+    role === 'admin'
+      ? '/admin'
+      : ['agent', 'developer', 'landlord', 'agency'].includes(role)
+        ? '/workspace'
+        : '/dashboard';
+  const canUseWorkspace = ['agent', 'developer', 'landlord', 'agency', 'admin'].includes(role);
 
   const openWorkspace = () => {
     if (canUseWorkspace) setLayoutMode('main');
@@ -243,7 +248,7 @@ const MarketplaceHeader = () => {
             {theme === 'dark' ? <FaSun className="text-amber-400" /> : <FaMoon />}
           </button>
           <Link
-            to={isAuthenticated ? '/dashboard' : '/login?redirect=/dashboard'}
+            to={isAuthenticated ? accountTo : `/login?redirect=${accountTo}`}
             onClick={openWorkspace}
             aria-label="Saved"
             className="rounded-full p-2 text-ink-muted transition hover:bg-chip hover:text-brand-red"

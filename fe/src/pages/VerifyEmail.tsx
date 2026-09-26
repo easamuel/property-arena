@@ -19,8 +19,12 @@ import { useToast } from '@/hooks/useToast';
 
 type Status = 'verifying' | 'success' | 'error' | 'waiting';
 
-const homeForRole = (role?: string) =>
-  role?.toLowerCase() === 'admin' ? '/admin' : '/dashboard';
+const homeForRole = (role?: string) => {
+  const r = role?.toLowerCase();
+  if (r === 'admin') return '/admin';
+  if (['agent', 'landlord', 'developer', 'agency'].includes(r || '')) return '/workspace';
+  return '/dashboard';
+};
 
 const ResendPanel: React.FC<{ initialEmail: string; initialDevLink?: string }> = ({
   initialEmail,

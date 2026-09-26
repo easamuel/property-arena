@@ -75,6 +75,7 @@ export class AuthService {
   private getStrategy(role: string): UserCreationStrategy {
     switch (role.toLowerCase()) {
       case ROLE_ENUM.AGENT:
+      case ROLE_ENUM.AGENCY:
         return this.AgentCreationStrategy;
       default:
         return this.DefaultUserCreationStrategy;

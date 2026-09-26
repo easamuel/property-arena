@@ -11,6 +11,7 @@ const ALLOWED_MAIN_LAYOUT_ROLES = [
   ROLE_ENUM.AGENT,
   ROLE_ENUM.LANDLORD,
   ROLE_ENUM.DEVELOPER,
+  ROLE_ENUM.AGENCY,
 ];
 
 const LayoutSwitcher = () => {

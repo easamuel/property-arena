@@ -13,6 +13,8 @@ import CustomSelect from "@/components/dropdowns/CustomSelect";
 import { enumToSelectOptions } from "@/utils/enumToSelectOptions";
 import { BEDROOM_OPTIONS } from "@/types/options";
 import LocationDropdown from "./LocationDropdown";
+import { useAuthStore } from "@/store/authStore";
+import { isWorkspaceRole } from "@/lib/workspace";
 
 const CreateProperty = () => {
   const {
@@ -26,6 +28,7 @@ const CreateProperty = () => {
     canProceedToStep
   } = usePropertyStore();
   const navigate = useNavigate();
+  const userRole = useAuthStore((s) => s.user?.role);
 
 
   const steps = ['Basic', 'Gallery', 'Features', 'Agent & Review'];
@@ -47,11 +50,8 @@ const CreateProperty = () => {
   const handleSubmit = async () => {
     try {
       await submitProperty();
-      navigate("/my-listing")
-
-      // Handle success (show toast, redirect, etc.)
+      navigate(isWorkspaceRole(userRole) ? '/workspace/listings' : '/my-listing');
     } catch (error) {
-      // Handle error (show error message, etc.)
       console.error('Submission failed:', error);
     }
   };

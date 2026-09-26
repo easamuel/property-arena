@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiBriefcase, FiCheck, FiHome, FiKey, FiLayers } from 'react-icons/fi';
+import { FiBriefcase, FiCheck, FiHome, FiKey, FiLayers, FiUsers } from 'react-icons/fi';
 import type { IconType } from 'react-icons';
 import { useSignup } from '@/hooks';
 import AuthLayout from '@/components/auth/AuthLayout';
@@ -15,11 +15,12 @@ import {
   isValidEmail,
 } from '@/components/auth/AuthFormControls';
 
-type Role = 'user' | 'agent' | 'developer' | 'landlord';
+type Role = 'user' | 'agent' | 'developer' | 'landlord' | 'agency';
 
 const ACCOUNT_TYPES: { role: Role; label: string; description: string; icon: IconType }[] = [
   { role: 'user', label: 'Buyer / Tenant', description: 'Find a home to buy or rent', icon: FiHome },
   { role: 'agent', label: 'Agent', description: 'List and market properties', icon: FiBriefcase },
+  { role: 'agency', label: 'Agency', description: 'Run a multi-agent brokerage', icon: FiUsers },
   { role: 'developer', label: 'Developer', description: 'Showcase new projects', icon: FiLayers },
   { role: 'landlord', label: 'Landlord', description: 'Rent out your property', icon: FiKey },
 ];

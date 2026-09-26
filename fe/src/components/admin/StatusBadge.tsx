@@ -15,10 +15,12 @@ const variantStyles: Record<NonNullable<StatusBadgeProps['variant']>, string> = 
 
 const statusVariant = (status: string): StatusBadgeProps['variant'] => {
   const s = status.toLowerCase();
-  if (['published', 'active', 'completed', 'successful', 'converted', 'new'].includes(s)) return 'green';
-  if (['pending', 'draft', 'qualified', 'contacted'].includes(s)) return s === 'draft' ? 'gray' : 'orange';
+  if (['published', 'active', 'completed', 'successful', 'converted', 'new', 'paid', 'confirmed', 'closed'].includes(s))
+    return 'green';
+  if (['pending', 'draft', 'qualified', 'contacted', 'in-progress', 'negotiating', 'follow up'].includes(s))
+    return s === 'draft' ? 'gray' : 'orange';
   if (['inactive', 'cancelled', 'failed', 'suspended'].includes(s)) return 'red';
-  if (['rent payment', 'scheduled'].includes(s)) return 'blue';
+  if (['rent payment', 'scheduled', 'interested'].includes(s)) return s === 'interested' ? 'purple' : 'blue';
   if (['service charge', 'refunded'].includes(s)) return 'purple';
   return 'gray';
 };

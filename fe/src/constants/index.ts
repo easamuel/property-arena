@@ -26,6 +26,7 @@ export enum ROLE_ENUM {
   AGENT = 'agent',
   DEVELOPER = 'developer',
   LANDLORD = 'landlord',
+  AGENCY = 'agency',
 }
 
 export type LayoutMode = 'main' | 'user';

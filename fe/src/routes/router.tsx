@@ -53,6 +53,26 @@ import SeoLocationListings from '@/pages/list-property/SeoLocationListings';
 import CmsPage from '@/pages/CmsPage';
 import SoldPropertiesPage from '@/pages/SoldPropertiesPage';
 import ScrollToTop from '@/components/ScrollToTop';
+import WorkspaceLayout from '@/layouts/WorkspaceLayout';
+import {
+  WorkspaceHome,
+  WorkspacePostProperty,
+  WorkspaceListings,
+  WorkspaceBuyerRequests,
+  WorkspaceMessages,
+  WorkspaceLeads,
+  WorkspaceBookings,
+  WorkspaceDeals,
+  WorkspaceReports,
+  WorkspacePackages,
+  WorkspaceSubscription,
+  WorkspaceBilling,
+  WorkspaceProfile,
+  WorkspaceNotifications,
+  WorkspaceSettings,
+  WorkspaceHelp,
+} from '@/pages/workspace';
+import { WORKSPACE_ROLES } from '@/lib/workspace';
 
 /** Root shell so every route (marketplace, auth, admin) resets scroll on navigation. */
 function AppRoot() {
@@ -100,6 +120,32 @@ export const router = createBrowserRouter([
           { path: 'users', element: <AdminUsers /> },
           { path: 'agents', element: <AdminAgents /> },
           { path: 'developers', element: <AdminDevelopers /> },
+        ],
+      },
+      {
+        path: '/workspace',
+        element: (
+          <ProtectedRoute requireRole={[...WORKSPACE_ROLES]} fallback={<div>Loading…</div>}>
+            <WorkspaceLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <WorkspaceHome /> },
+          { path: 'post-property', element: <WorkspacePostProperty /> },
+          { path: 'listings', element: <WorkspaceListings /> },
+          { path: 'buyer-requests', element: <WorkspaceBuyerRequests /> },
+          { path: 'messages', element: <WorkspaceMessages /> },
+          { path: 'leads', element: <WorkspaceLeads /> },
+          { path: 'bookings', element: <WorkspaceBookings /> },
+          { path: 'deals', element: <WorkspaceDeals /> },
+          { path: 'reports', element: <WorkspaceReports /> },
+          { path: 'packages', element: <WorkspacePackages /> },
+          { path: 'subscription', element: <WorkspaceSubscription /> },
+          { path: 'billing', element: <WorkspaceBilling /> },
+          { path: 'profile', element: <WorkspaceProfile /> },
+          { path: 'notifications', element: <WorkspaceNotifications /> },
+          { path: 'settings', element: <WorkspaceSettings /> },
+          { path: 'help', element: <WorkspaceHelp /> },
         ],
       },
       {
