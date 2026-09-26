@@ -80,12 +80,20 @@ body,
 #root {
   font-family: var(--font-sans);
   min-height: 100%;
+  overflow-x: hidden;
 }
 
 body {
   background-color: var(--pa-bg);
   color: var(--pa-fg);
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Safer tap targets / no accidental horizontal scroll on mobile */
+img,
+video,
+iframe {
+  max-width: 100%;
 }
 
 /* Form controls follow theme without per-page dark: spam */

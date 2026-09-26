@@ -1,92 +1,135 @@
-import { FaBell, FaChevronDown } from 'react-icons/fa';
+import { FaBell, FaBars, FaChevronDown, FaMoon, FaSun } from 'react-icons/fa';
 import { useAuth } from '@/hooks/useAuth';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { ROLE_ENUM } from '@/constants';
 import { useLayoutMode } from '@/hooks/useLayoutMode';
+import { useTheme } from '@/theme/ThemeProvider';
 
-const Topbar = () => {
+type TopbarProps = {
+  onMenuClick?: () => void;
+};
+
+const Topbar = ({ onMenuClick }: TopbarProps) => {
   const { isAuthenticated, user, logout } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { layoutMode, setLayoutMode } = useLayoutMode();
+  const { theme, toggle } = useTheme();
+  const navigate = useNavigate();
 
   const toggleDropdown = () => setIsModalOpen((prev) => !prev);
   const closeDropdown = () => setIsModalOpen(false);
 
-  const ALLOWED_MAIN_LAYOUT_ROLES = [
-    ROLE_ENUM.ADMIN,
-    ROLE_ENUM.AGENT,
-    ROLE_ENUM.LANDLORD,
-    ROLE_ENUM.DEVELOPER,
-  ];
-
-  const canSwitchLayout = isAuthenticated && ALLOWED_MAIN_LAYOUT_ROLES.includes(user?.role);
+  const canSwitchLayout =
+    isAuthenticated &&
+    ['admin', 'agent', 'landlord', 'developer'].includes(String(user?.role || '').toLowerCase());
 
   const handleSwitchLayout = () => {
-    setLayoutMode(layoutMode === 'main' ? 'user' : 'main');
+    const next = layoutMode === 'main' ? 'user' : 'main';
+    setLayoutMode(next);
     closeDropdown();
+    if (next === 'user') {
+      navigate('/');
+    }
   };
 
   return (
-    <div className="h-12 bg-sec-dark-blue text-white px-6 shadow relative z-50">
-      <div className="flex justify-between items-center h-12">
-        <div className="text-xl font-semibold"></div>
+    <header className="sticky top-0 z-30 border-b border-white/10 bg-sec-dark-blue text-white">
+      <div className="flex h-14 items-center justify-between gap-3 px-3 sm:px-5">
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={onMenuClick}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white transition hover:bg-white/15 md:hidden"
+            aria-label="Open menu"
+          >
+            <FaBars />
+          </button>
+          <p className="truncate text-sm font-semibold tracking-tight text-white/90 sm:text-base">
+            PropertyArena
+          </p>
+        </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-1.5 sm:gap-3">
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-white/80 transition hover:bg-white/10 hover:text-white"
+          >
+            {theme === 'dark' ? <FaSun className="text-amber-300" /> : <FaMoon />}
+          </button>
+
           {isAuthenticated ? (
             <>
-              <Link to="/messages" aria-label="Messages" className="relative">
-                <FaBell className="text-xl" />
+              <Link
+                to="/messages"
+                aria-label="Messages"
+                className="relative hidden h-10 w-10 items-center justify-center rounded-xl text-white/80 transition hover:bg-white/10 hover:text-white sm:inline-flex"
+              >
+                <FaBell />
               </Link>
 
               <div className="relative">
-                <div
+                <button
+                  type="button"
                   onClick={toggleDropdown}
-                  className="flex items-center gap-2 cursor-pointer"
+                  className="flex items-center gap-2 rounded-xl py-1 pl-1 pr-2 transition hover:bg-white/10"
                 >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-brand-green text-sm font-bold uppercase">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white/80 bg-brand-green text-sm font-bold uppercase">
                     {(user?.name || user?.email || 'U').slice(0, 1)}
                   </span>
-                  <FaChevronDown className="text-sm" />
-                </div>
+                  <FaChevronDown className="hidden text-xs sm:block" />
+                </button>
 
                 {isModalOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white text-black rounded shadow-lg p-4 z-50">
-                    <div className="mb-2">
-                      <p className="text-lg font-semibold">{user?.name}</p>
-                      <p className="text-sm text-gray-600">{user?.email}</p>
-                    </div>
-
-                    <hr className="my-2" />
-
-                    <div className="flex flex-col space-y-2">
-                      <Link
-                        to="/profile"
-                        onClick={closeDropdown}
-                        className="hover:bg-gray-100 px-2 py-1 rounded text-sm"
-                      >
-                        My Profile
-                      </Link>
-                      {canSwitchLayout && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={closeDropdown} aria-hidden />
+                    <div className="absolute right-0 z-50 mt-2 w-[min(18rem,calc(100vw-1.5rem))] rounded-2xl border border-line bg-surface-elevated p-4 text-ink shadow-2xl">
+                      <div className="mb-2">
+                        <p className="truncate text-base font-semibold">{user?.name}</p>
+                        <p className="truncate text-sm text-ink-muted">{user?.email}</p>
+                      </div>
+                      <hr className="my-2 border-line" />
+                      <div className="flex flex-col gap-1">
+                        <Link
+                          to="/profile"
+                          onClick={closeDropdown}
+                          className="rounded-xl px-3 py-2 text-sm font-medium transition hover:bg-chip"
+                        >
+                          My profile
+                        </Link>
+                        <Link
+                          to="/dashboard"
+                          onClick={closeDropdown}
+                          className="rounded-xl px-3 py-2 text-sm font-medium transition hover:bg-chip"
+                        >
+                          Dashboard
+                        </Link>
+                        {canSwitchLayout && (
+                          <button
+                            type="button"
+                            onClick={handleSwitchLayout}
+                            className="rounded-xl bg-brand-green px-3 py-2 text-left text-sm font-semibold text-white transition hover:bg-brand-green-dark"
+                          >
+                            {layoutMode === 'main'
+                              ? 'Switch to marketplace view'
+                              : 'Switch to workspace view'}
+                          </button>
+                        )}
                         <button
                           type="button"
-                          onClick={handleSwitchLayout}
-                          className="text-left text-sm font-semibold bg-primary-green text-white hover:bg-primary-green-hover px-2 py-1 rounded"
+                          onClick={() => {
+                            logout();
+                            closeDropdown();
+                            navigate('/login');
+                          }}
+                          className="rounded-xl px-3 py-2 text-left text-sm font-medium text-brand-red transition hover:bg-red-50 dark:hover:bg-red-950/30"
                         >
-                          Switch to {layoutMode === 'main' ? 'User' : 'Main'} Layout
+                          Log out
                         </button>
-                      )}
-                      <button
-                        onClick={() => {
-                          logout();
-                          closeDropdown();
-                        }}
-                        className="text-left text-sm text-red-600 hover:bg-gray-100 px-2 py-1 rounded"
-                      >
-                        Logout
-                      </button>
+                      </div>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
             </>
@@ -94,29 +137,21 @@ const Topbar = () => {
             <>
               <Link
                 to="/login"
-                className="text-sm bg-white text-black px-4 py-1 rounded hover:bg-gray-200"
+                className="rounded-xl bg-white px-3 py-2 text-sm font-semibold text-ink transition hover:bg-white/90"
               >
                 Login
               </Link>
               <Link
                 to="/signup"
-                className="text-sm bg-brand-green px-4 py-1 rounded hover:bg-brand-green-dark"
+                className="hidden rounded-xl bg-brand-green px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-green-dark sm:inline-flex"
               >
-                Sign Up
+                Sign up
               </Link>
             </>
           )}
         </div>
       </div>
-
-      {/* Click outside to close modal (optional enhancement) */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={closeDropdown}
-        />
-      )}
-    </div>
+    </header>
   );
 };
 

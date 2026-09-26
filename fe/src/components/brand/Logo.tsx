@@ -6,6 +6,8 @@ type LogoProps = {
   variant?: 'default' | 'onDark' | 'auto';
   to?: string;
   className?: string;
+  /** Runs before navigation (e.g. leave workspace layout for homepage). */
+  onNavigate?: () => void;
 };
 
 const heights = { sm: 'h-8', md: 'h-11', lg: 'h-16' };
@@ -24,12 +26,13 @@ function scrollPageTop() {
  * Canvas is transparent — house / "Property" whites stay as brand fill.
  * On homepage, click scrolls to top; elsewhere navigates home.
  */
-export function Logo({ size = 'md', to = '/', className = '' }: LogoProps) {
+export function Logo({ size = 'md', to = '/', className = '', onNavigate }: LogoProps) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const isHome = pathname === '/' || pathname === '';
 
   const onClick = (e: React.MouseEvent) => {
+    onNavigate?.();
     if (!isHome) return;
     e.preventDefault();
     scrollPageTop();

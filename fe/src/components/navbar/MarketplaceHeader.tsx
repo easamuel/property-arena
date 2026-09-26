@@ -11,6 +11,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import Logo from '@/components/brand/Logo';
 import { useTheme } from '@/theme/ThemeProvider';
+import { useLayoutMode } from '@/hooks/useLayoutMode';
 
 type MegaLink = { label: string; to: string; hint?: string };
 type MegaColumn = { title: string; links: MegaLink[] };
@@ -115,12 +116,19 @@ const NAV: NavItem[] = [
 const MarketplaceHeader = () => {
   const { isAuthenticated, user } = useAuth();
   const { theme, toggle } = useTheme();
+  const { layoutMode, setLayoutMode } = useLayoutMode();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMega, setOpenMega] = useState<string | null>(null);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
   const navRef = useRef<HTMLElement>(null);
   const initials = user?.name?.[0] || user?.email?.[0] || 'U';
-  const accountTo = user?.role === 'admin' ? '/admin' : '/dashboard';
+  const role = String(user?.role || '').toLowerCase();
+  const accountTo = role === 'admin' ? '/admin' : '/dashboard';
+  const canUseWorkspace = ['agent', 'developer', 'landlord', 'admin'].includes(role);
+
+  const openWorkspace = () => {
+    if (canUseWorkspace) setLayoutMode('main');
+  };
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -236,6 +244,7 @@ const MarketplaceHeader = () => {
           </button>
           <Link
             to={isAuthenticated ? '/dashboard' : '/login?redirect=/dashboard'}
+            onClick={openWorkspace}
             aria-label="Saved"
             className="rounded-full p-2 text-ink-muted transition hover:bg-chip hover:text-brand-red"
           >
@@ -244,6 +253,7 @@ const MarketplaceHeader = () => {
           {isAuthenticated ? (
             <Link
               to={accountTo}
+              onClick={openWorkspace}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-green text-sm font-bold uppercase text-white"
               aria-label="Account"
             >
@@ -343,6 +353,32 @@ const MarketplaceHeader = () => {
                 >
                   Sign Up
                 </Link>
+              </div>
+            )}
+            {isAuthenticated && (
+              <div className="mt-3 space-y-2 border-t border-line pt-3">
+                <Link
+                  to={accountTo}
+                  onClick={() => {
+                    openWorkspace();
+                    closeAll();
+                  }}
+                  className="block rounded-xl bg-brand-green px-3 py-3 text-center text-sm font-bold text-white"
+                >
+                  Open dashboard
+                </Link>
+                {canUseWorkspace && layoutMode === 'user' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLayoutMode('main');
+                      closeAll();
+                    }}
+                    className="w-full rounded-xl border border-line px-3 py-2.5 text-sm font-semibold text-ink"
+                  >
+                    Switch to workspace view
+                  </button>
+                )}
               </div>
             )}
           </nav>

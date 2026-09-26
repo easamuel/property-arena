@@ -1,20 +1,30 @@
 // src/components/MainLayoutRoute.tsx
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLayoutMode } from '@/hooks/useLayoutMode';
+import { useAuthStore } from '@/store/authStore';
 
 interface Props {
   children: React.ReactNode;
 }
 
-/** Ensures agent/workspace routes use the sidebar shell — never bounce to home. */
+const WORKSPACE_ROLES = new Set(['agent', 'developer', 'landlord', 'admin']);
+
+/**
+ * Workspace pages prefer the sidebar shell for pro accounts on first entry.
+ * Never re-forces mode — so the layout switcher can move to marketplace chrome freely.
+ */
 export const MainLayoutRoute = ({ children }: Props) => {
-  const { layoutMode, setLayoutMode } = useLayoutMode();
+  const { setLayoutMode } = useLayoutMode();
+  const role = String(useAuthStore((s) => s.user?.role) || '').toLowerCase();
+  const entered = useRef(false);
 
   useEffect(() => {
-    if (layoutMode !== 'main') {
+    if (entered.current) return;
+    entered.current = true;
+    if (WORKSPACE_ROLES.has(role)) {
       setLayoutMode('main');
     }
-  }, [layoutMode, setLayoutMode]);
+  }, [role, setLayoutMode]);
 
   return <>{children}</>;
 };

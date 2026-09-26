@@ -44,10 +44,10 @@ const UserLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const customHeader = hasCustomHeader(pathname);
 
   return (
-    <div className="flex min-h-screen">
-      <div className="flex w-full flex-col">
+    <div className="flex min-h-dvh overflow-x-hidden">
+      <div className="flex w-full min-w-0 flex-col">
         {!customHeader && <MarketplaceHeader />}
-        <main className="flex-1 bg-surface-muted">{children}</main>
+        <main className="min-w-0 flex-1 overflow-x-hidden bg-surface-muted">{children}</main>
       </div>
     </div>
   );

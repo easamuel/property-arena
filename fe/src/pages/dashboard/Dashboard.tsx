@@ -368,25 +368,25 @@ const Dashboard = () => {
           }}
           aria-hidden
         />
-        <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-10 sm:px-6 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-200/90">
+        <div className="relative mx-auto max-w-6xl px-3 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-10 lg:px-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-200/90 sm:text-xs">
             {desk.badge}
           </p>
-          <h1 className="mt-3 max-w-2xl font-serif text-3xl font-bold leading-tight tracking-tight sm:text-4xl md:text-5xl">
+          <h1 className="mt-2 max-w-2xl font-serif text-[1.85rem] font-bold leading-tight tracking-tight sm:mt-3 sm:text-4xl md:text-5xl">
             Welcome back, {firstName}.
           </h1>
-          <p className="mt-3 max-w-xl text-sm text-emerald-50/85 sm:text-base">{desk.tagline}</p>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-emerald-50/85 sm:text-base">{desk.tagline}</p>
 
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-col gap-2.5 sm:mt-7 sm:flex-row sm:flex-wrap sm:gap-3">
             <Link
               to={desk.primary.to}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-[#0b3d2e] shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-emerald-50"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-[#0b3d2e] shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-emerald-50"
             >
               <PrimaryIcon /> {desk.primary.label}
             </Link>
             <Link
               to={desk.secondary.to}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
             >
               <SecondaryIcon /> {desk.secondary.label}
             </Link>
@@ -395,26 +395,26 @@ const Dashboard = () => {
         <WaveBand />
       </section>
 
-      <div className="relative z-10 mx-auto -mt-6 max-w-6xl space-y-8 px-4 pb-14 sm:px-6 lg:px-8">
-        <div className="grid gap-4 sm:grid-cols-3">
+      <div className="relative z-10 mx-auto -mt-5 max-w-6xl space-y-6 px-3 pb-12 sm:-mt-6 sm:space-y-8 sm:px-6 sm:pb-14 lg:px-8">
+        <div className="grid gap-3 sm:grid-cols-3 sm:gap-4">
           {desk.stats.map((card, i) => (
             <div
               key={card.label}
-              className="group relative overflow-hidden rounded-2xl border border-emerald-900/5 bg-white/90 p-5 shadow-[0_18px_40px_-28px_rgba(11,61,46,0.45)] backdrop-blur transition duration-300 hover:-translate-y-1"
+              className="group relative overflow-hidden rounded-[1.35rem] bg-white/95 p-4 shadow-[0_18px_40px_-28px_rgba(11,61,46,0.45)] ring-1 ring-emerald-900/5 backdrop-blur transition duration-300 hover:-translate-y-1 sm:p-5"
               style={{ animationDelay: `${i * 80}ms` }}
             >
-              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-[#5dbb46]/25 to-transparent transition group-hover:scale-110" />
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-emerald-800/55">
+              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-[#5dbb46]/20 to-transparent transition group-hover:scale-110" />
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-800/55">
                     {card.label}
                   </p>
-                  <p className="mt-2 font-serif text-3xl font-bold text-[#0b3d2e]">
+                  <p className="mt-1.5 font-serif text-2xl font-bold text-[#0b3d2e] sm:mt-2 sm:text-3xl">
                     {card.value({ ...stats, loading, error: Boolean(error) })}
                   </p>
                   <p className="mt-1 text-xs text-gray-500">{card.hint}</p>
                 </div>
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0b3d2e]/8 text-[#0b3d2e]">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-[#0b3d2e]/8 text-[#0b3d2e] sm:h-10 sm:w-10">
                   <card.icon size={18} />
                 </span>
               </div>
@@ -422,12 +422,12 @@ const Dashboard = () => {
           ))}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
           {desk.actions.map((action) => (
             <Link
               key={`${action.to}-${action.label}`}
               to={action.to}
-              className="flex items-center gap-3 rounded-2xl border border-dashed border-emerald-800/15 bg-[#0b3d2e]/[0.03] px-4 py-3 transition hover:border-brand-green hover:bg-white hover:shadow-md"
+              className="flex items-center gap-3 rounded-[1.25rem] bg-white/80 px-3.5 py-3 ring-1 ring-emerald-900/5 transition hover:bg-white hover:shadow-md sm:px-4"
             >
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#5dbb46]/15 text-[#0b3d2e]">
                 <action.icon size={16} />
@@ -447,10 +447,10 @@ const Dashboard = () => {
           </p>
         )}
 
-        <section className="overflow-hidden rounded-3xl border border-emerald-900/5 bg-white shadow-[0_24px_60px_-36px_rgba(11,61,46,0.55)]">
-          <div className="flex flex-wrap items-end justify-between gap-3 border-b border-emerald-900/5 px-5 py-4 sm:px-6">
-            <div>
-              <h2 className="font-serif text-xl font-bold text-[#0b3d2e]">{desk.boardTitle}</h2>
+        <section className="overflow-hidden rounded-[1.75rem] bg-white shadow-[0_24px_60px_-36px_rgba(11,61,46,0.55)] ring-1 ring-emerald-900/5">
+          <div className="flex flex-wrap items-end justify-between gap-3 border-b border-emerald-900/5 px-4 py-4 sm:px-6">
+            <div className="min-w-0">
+              <h2 className="font-serif text-lg font-bold text-[#0b3d2e] sm:text-xl">{desk.boardTitle}</h2>
               <p className="mt-0.5 text-xs text-gray-500">{desk.boardHint}</p>
             </div>
             {desk.showListings && desk.emptyCta && (

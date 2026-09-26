@@ -69,67 +69,83 @@ const SideBar: React.FC<SideBarProps> = ({ onClose }) => {
   const { setLayoutMode } = useLayoutMode();
   const tabs = TABS_BY_ROLE[role] || TABS_BY_ROLE.user;
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-  const handleHomeClick = () => {
+  const goMarketplaceHome = () => {
     setLayoutMode('user');
     navigate('/');
+    onClose?.();
+  };
+
+  const handleLogout = () => {
+    logout();
+    setLayoutMode('user');
+    navigate('/login');
+    onClose?.();
   };
 
   return (
-    <div className="min-h-screen w-64 bg-sec-dark-blue text-white">
-      <div className="flex items-center justify-between px-4 py-3 md:hidden">
-        <span className="font-bold">Menu</span>
-        <button type="button" onClick={onClose} className="text-xl text-white">
+    <div className="flex h-full min-h-dvh w-full flex-col bg-gradient-to-b from-[#12141c] to-[#0c0e14] text-white">
+      <div className="flex items-center justify-between gap-2 px-4 pb-2 pt-4 md:pt-5">
+        <Logo
+          size="md"
+          className="max-w-[9.5rem]"
+          onNavigate={() => {
+            setLayoutMode('user');
+            onClose?.();
+          }}
+        />
+        <button
+          type="button"
+          onClick={onClose}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-lg md:hidden"
+          aria-label="Close menu"
+        >
           ✕
         </button>
       </div>
 
-      <div className="mb-6 flex items-center justify-center px-4 pt-5">
-        <Logo size="md" />
-      </div>
-      <div className="p-4">
-        <p className="mb-3 px-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">
-          {role === 'user' ? 'Buyer / Tenant' : role}
-        </p>
-        <nav className="space-y-2">
-          <div className="mb-6">
-            <button
-              type="button"
-              onClick={handleHomeClick}
-              className="flex w-full items-center gap-3 rounded-md px-4 py-2 text-white transition-colors hover:bg-gray-800"
-            >
-              <span className="text-lg">
-                <FaHome />
-              </span>
-              <span className="text-sm font-medium">Marketplace</span>
-            </button>
-          </div>
-          {tabs.map((tab) => (
-            <NavLink
-              key={tab.route + tab.name}
-              to={tab.route}
-              end={tab.route === '/dashboard'}
-              onClick={onClose}
-              className={({ isActive }) =>
-                `flex w-full items-center gap-3 rounded-md px-4 py-2 transition-colors ${
-                  isActive ? 'bg-white text-black' : 'text-white hover:bg-gray-800'
-                }`
-              }
-            >
-              <span className="text-lg">{tab.icon}</span>
-              <span className="text-sm font-medium">{tab.name}</span>
-            </NavLink>
-          ))}
-        </nav>
+      <p className="px-5 pb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/40">
+        {role === 'user' ? 'Buyer / Tenant' : role} workspace
+      </p>
+
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-4">
+        <button
+          type="button"
+          onClick={goMarketplaceHome}
+          className="flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-left text-white/90 transition hover:bg-white/10"
+        >
+          <span className="text-base text-brand-green">
+            <FaHome />
+          </span>
+          <span className="text-sm font-medium">Marketplace home</span>
+        </button>
+
+        {tabs.map((tab) => (
+          <NavLink
+            key={tab.route + tab.name}
+            to={tab.route}
+            end={tab.route === '/dashboard'}
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 transition ${
+                isActive
+                  ? 'bg-white text-[#0b3d2e] shadow-lg shadow-black/20'
+                  : 'text-white/85 hover:bg-white/10'
+              }`
+            }
+          >
+            <span className="text-base">{tab.icon}</span>
+            <span className="text-sm font-medium">{tab.name}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="border-t border-white/10 p-3">
         <button
           type="button"
           onClick={handleLogout}
-          className="mt-4 flex w-full items-center gap-3 rounded-md px-4 py-2 text-white transition-colors hover:bg-gray-800"
+          className="flex w-full items-center gap-3 rounded-2xl px-3.5 py-2.5 text-white/80 transition hover:bg-white/10 hover:text-white"
         >
-          <span className="text-lg">
+          <span className="text-base">
             <FaSignOutAlt />
           </span>
           <span className="text-sm font-medium">Sign out</span>
