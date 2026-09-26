@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   FaBath,
@@ -13,7 +13,6 @@ import {
   FaLock,
   FaMapMarkerAlt,
   FaPlay,
-  FaSearch,
   FaShieldAlt,
   FaStar,
   FaTags,
@@ -40,6 +39,8 @@ import {
   type SearchTab,
 } from '@/lib/locations';
 import GoogleLiveSearch from '@/components/search/GoogleLiveSearch';
+import FaqSection from '@/components/seo/FaqSection';
+import { HOME_FAQS } from '@/data/page-faqs';
 
 const SEARCH_TABS: SearchTab[] = ['Buy', 'Rent', 'Land', 'Short Let', 'Commercial'];
 
@@ -174,78 +175,6 @@ const GUIDES = [
   },
 ];
 
-const PRICE_RANGES = [
-  { label: 'Any price', min: '', max: '' },
-  { label: 'Under ₦20m', min: '', max: '20000000' },
-  { label: '₦20m – ₦50m', min: '20000000', max: '50000000' },
-  { label: '₦50m – ₦100m', min: '50000000', max: '100000000' },
-  { label: '₦100m – ₦250m', min: '100000000', max: '250000000' },
-  { label: '₦250m+', min: '250000000', max: '' },
-];
-
-const TYPES_BY_TAB: Record<SearchTab, { value: string; label: string }[]> = {
-  Buy: [
-    { value: 'Duplex', label: 'Duplex' },
-    { value: 'Apartment', label: 'Flat / Apartment' },
-    { value: 'Terrace', label: 'Terrace' },
-    { value: 'Bungalow', label: 'Bungalow' },
-    { value: 'Mansion', label: 'Mansion' },
-    { value: 'Mini Flat', label: 'Mini flat' },
-    { value: 'Penthouse', label: 'Penthouse' },
-  ],
-  Rent: [
-    { value: 'Apartment', label: 'Flat / Apartment' },
-    { value: 'Mini Flat', label: 'Mini flat' },
-    { value: 'Self Contain', label: 'Self contain' },
-    { value: 'Duplex', label: 'Duplex' },
-    { value: 'Terrace', label: 'Terrace' },
-    { value: 'Bungalow', label: 'Bungalow' },
-    { value: 'Shared Apartment', label: 'Shared apartment' },
-  ],
-  Land: [
-    { value: 'Residential Land', label: 'Residential plot' },
-    { value: 'Commercial Land', label: 'Commercial plot' },
-    { value: 'Industrial Land', label: 'Industrial land' },
-    { value: 'Farmland', label: 'Farmland' },
-    { value: 'Mixed Use Land', label: 'Mixed-use land' },
-  ],
-  'Short Let': [
-    { value: 'Apartment', label: 'Apartment' },
-    { value: 'Studio', label: 'Studio' },
-    { value: 'Duplex', label: 'Duplex' },
-    { value: 'Penthouse', label: 'Penthouse' },
-    { value: 'Serviced Apartment', label: 'Serviced apartment' },
-  ],
-  Commercial: [
-    { value: 'Office', label: 'Office space' },
-    { value: 'Shop', label: 'Shop / Retail' },
-    { value: 'Warehouse', label: 'Warehouse' },
-    { value: 'Co Working Space', label: 'Co-working space' },
-    { value: 'Showroom', label: 'Showroom' },
-    { value: 'Plaza', label: 'Plaza / Complex' },
-  ],
-};
-
-const LAND_SIZES = [
-  { value: '', label: 'Any size' },
-  { value: 'half-plot', label: 'Half plot' },
-  { value: 'full-plot', label: 'Full plot' },
-  { value: '2-plots', label: '2 plots' },
-  { value: '500sqm', label: '500 sqm' },
-  { value: '1000sqm', label: '1,000 sqm' },
-  { value: '1-acre', label: '1 acre' },
-  { value: '2-acres', label: '2 acres' },
-  { value: '1-hectare', label: '1 hectare' },
-  { value: 'hectares', label: 'Hectares+' },
-];
-
-const COMMERCIAL_SIZES = [
-  { value: '', label: 'Any size' },
-  { value: 'under-50', label: 'Under 50 sqm' },
-  { value: '50-100', label: '50 – 100 sqm' },
-  { value: '100-250', label: '100 – 250 sqm' },
-  { value: '250-500', label: '250 – 500 sqm' },
-  { value: '500+', label: '500+ sqm' },
 ];
 
 const formatPrice = (price: number | string | undefined) => {
@@ -256,30 +185,21 @@ const formatPrice = (price: number | string | undefined) => {
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { featuredListings, fetchFeaturedProperties } = usePropertyStore();
+  const { featuredListings, fetchFeaturedProperties, fetchProperties, listings } = usePropertyStore();
   const [tab, setTab] = useState<SearchTab>('Buy');
-  const [location, setLocation] = useState('');
-  const [propertyType, setPropertyType] = useState('');
-  const [priceRange, setPriceRange] = useState('Any price');
-  const [bedrooms, setBedrooms] = useState('');
-  const [landSize, setLandSize] = useState('');
   const [marketTab, setMarketTab] = useState<'sales' | 'rental'>('sales');
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [newsletterBusy, setNewsletterBusy] = useState(false);
   const [newsletterMsg, setNewsletterMsg] = useState('');
-  const [heroReady, setHeroReady] = useState(true);
+  const [heroReady, setHeroReady] = useState(false);
   const [articles, setArticles] = useState(GUIDES);
 
-  const switchTab = (next: SearchTab) => {
-    setTab(next);
-    setPropertyType('');
-    setBedrooms('');
-    setLandSize('');
-  };
+  const switchTab = (next: SearchTab) => setTab(next);
 
   useEffect(() => {
     fetchFeaturedProperties({ page: 1, limit: 4 });
+    fetchProperties({ page: '1', limit: '8' });
     const t = requestAnimationFrame(() => setHeroReady(true));
     ADMIN_SERVICE.listPublicContent('article')
       .then((res: { data?: { data?: Record<string, unknown> }[] }) => {
@@ -297,63 +217,43 @@ const HomePage = () => {
       })
       .catch(() => undefined);
     return () => cancelAnimationFrame(t);
-  }, [fetchFeaturedProperties]);
+  }, [fetchFeaturedProperties, fetchProperties]);
 
-  const isProd = import.meta.env.PROD;
-  const featured = (() => {
-    if (!featuredListings?.length) {
-      return isProd ? [] : FALLBACK_FEATURED;
-    }
-    return featuredListings.slice(0, 4).map((raw, i) => {
-      const item = raw as typeof raw & {
-        _id?: string;
-        image?: string;
-        media?: { url?: string }[];
-        address?: string;
-        bedrooms?: number;
-        bathrooms?: number;
-        size?: number | string;
-        area?: string;
-      };
-      return {
-        id: String(item.id || item._id || item.title),
-        title: item.title || 'Featured Property',
-        location: item.location || item.address || 'Nigeria',
-        price: formatPrice(item.price),
-        beds: item.bedrooms ?? null,
-        baths: item.bathrooms ?? null,
-        area: item.area || (item.size != null ? `${item.size}sqm` : null),
-        img: item.image || item.media?.[0]?.url || galleryAt(i),
-      };
-    });
-  })();
-
-  const handleSearch = (e: FormEvent) => {
-    e.preventDefault();
-    const typeForUrl =
-      tab === 'Land'
-        ? propertyType || 'Land'
-        : tab === 'Commercial'
-          ? propertyType || 'Commercial'
-          : propertyType;
-    let url = buildListingSearchUrl(tab, location, typeForUrl);
-    const range = PRICE_RANGES.find((r) => r.label === priceRange);
-    const params = new URLSearchParams(url.includes('?') ? url.split('?')[1] : '');
-    if (range?.min) params.set('minPrice', range.min);
-    if (range?.max) params.set('maxPrice', range.max);
-    if (tab !== 'Land' && tab !== 'Commercial' && bedrooms) {
-      params.set('bedroom', bedrooms);
-    }
-    if ((tab === 'Land' || tab === 'Commercial') && landSize) {
-      params.set('size', landSize);
-    }
-    const qs = params.toString();
-    const path = url.split('?')[0];
-    navigate(qs ? `${path}?${qs}` : path);
+  const mapListing = (raw: (typeof featuredListings)[0], i: number) => {
+    const item = raw as typeof raw & {
+      _id?: string;
+      image?: string;
+      media?: { url?: string }[];
+      address?: string;
+      bedrooms?: number;
+      bathrooms?: number;
+      size?: number | string;
+      area?: string;
+    };
+    return {
+      id: String(item.id || item._id || item.title || i),
+      title: item.title || 'Featured Property',
+      location: item.location || item.address || 'Nigeria',
+      price: formatPrice(item.price),
+      beds: item.bedrooms ?? null,
+      baths: item.bathrooms ?? null,
+      area: item.area || (item.size != null ? `${item.size}sqm` : null),
+      img: item.image || item.media?.[0]?.url || galleryAt(i),
+    };
   };
 
+  const featured = (() => {
+    if (featuredListings?.length) {
+      return featuredListings.slice(0, 4).map(mapListing);
+    }
+    if (listings?.length) {
+      return listings.slice(0, 4).map(mapListing);
+    }
+    return FALLBACK_FEATURED;
+  })();
+
   const goPopular = (name: string, state: string) => {
-    navigate(buildListingSearchUrl(tab, `${name}, ${state}`, propertyType));
+    navigate(buildListingSearchUrl(tab, `${name}, ${state}`));
   };
 
   const trends = marketTab === 'sales' ? SALES_TRENDS : RENTAL_TRENDS;
@@ -367,169 +267,55 @@ const HomePage = () => {
       />
       <MarketplaceHeader />
 
-      {/* Hero — NPC / PropertyPro style: dark plane + neat white search card */}
-      <section className="relative bg-[#071510]">
-        {/* Clip decorative media only — keep content overflow visible for live search */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-35 transition-transform duration-[8s] ease-out"
-            style={{
-              backgroundImage: `url('${MEDIA.hero}')`,
-              transform: heroReady ? 'scale(1.05)' : 'scale(1)',
-            }}
+      {/* Hero — full-bleed property image + purpose tabs + Google search */}
+      <section className="relative min-h-[min(88vh,720px)] overflow-hidden bg-[#071510]">
+        <div className="absolute inset-0" aria-hidden>
+          <img
+            src={MEDIA.hero}
+            alt=""
+            className={`h-full w-full object-cover object-[center_35%] transition-transform duration-[10s] ease-out ${
+              heroReady ? 'scale-105' : 'scale-100'
+            }`}
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-[#071510] via-[#0b1f14]/92 to-[#143022]/85" />
-          <div className="absolute -right-20 top-0 h-80 w-80 rounded-full bg-brand-green/25 blur-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#071510] via-[#071510]/55 to-[#071510]/25" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#071510]/70 via-transparent to-[#071510]/35" />
         </div>
 
         <div
-          className={`relative z-10 mx-auto w-full max-w-5xl px-4 pb-16 pt-14 transition-all duration-700 sm:px-6 sm:pt-16 lg:px-8 ${
+          className={`relative z-10 mx-auto flex min-h-[min(88vh,720px)] w-full max-w-5xl flex-col justify-center px-4 pb-16 pt-20 transition-all duration-700 sm:px-6 lg:px-8 ${
             heroReady ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
           }`}
         >
-          <div className="mb-8 max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white ring-1 ring-white/15">
-              <FaShieldAlt className="text-brand-green" />
-              Nigeria&apos;s property marketplace
-            </span>
-            <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-[3.25rem]">
+          <div className="mb-10 max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-green">PropertyArena</p>
+            <h1 className="mt-3 text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl">
               Find the right property
             </h1>
-            <p className="mt-3 max-w-xl text-base text-white/75 sm:text-lg">
-              Search homes, land and commercial property for sale and rent — across every major city in Nigeria.
+            <p className="mt-4 max-w-xl text-base text-white/80 sm:text-lg">
+              Search homes, land and commercial property for sale and rent across Nigeria.
             </p>
           </div>
 
-          <form
-            onSubmit={handleSearch}
-            className="w-full max-w-5xl"
-          >
-            {/* Purpose tabs above the Google-style bar */}
-            <div className="mb-3 flex flex-wrap gap-1.5 sm:gap-2">
-              {SEARCH_TABS.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => switchTab(t)}
-                  className={`rounded-full px-4 py-2 text-xs font-bold transition sm:text-sm ${
-                    tab === t
-                      ? 'bg-white text-brand-green shadow-md'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-
-            {/* Google-format long search bar — one continuous pill */}
-            <div className="flex w-full flex-col gap-2 rounded-2xl bg-white p-2 shadow-2xl ring-1 ring-black/10 sm:flex-row sm:items-center sm:rounded-full sm:p-1.5 sm:pl-4 dark:bg-surface-elevated">
-              <div className="flex min-w-0 flex-1 items-center gap-3 px-2 py-2 sm:px-0 sm:py-0">
-                <FaSearch className="shrink-0 text-lg text-ink-muted" />
-                <input
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Search state, locality, area or keyword…"
-                  className="min-w-0 flex-1 border-0 bg-transparent text-base text-ink outline-none placeholder:text-ink-muted sm:text-lg"
-                  aria-label="Search location"
-                />
-              </div>
-
-              <div className="hidden h-8 w-px shrink-0 bg-line sm:block" />
-
-              <select
-                value={propertyType}
-                onChange={(e) => setPropertyType(e.target.value)}
-                className="w-full shrink-0 rounded-xl border-0 bg-chip px-3 py-2.5 text-sm font-medium text-ink outline-none sm:w-auto sm:min-w-[9.5rem] sm:rounded-none sm:bg-transparent"
-                aria-label={tab === 'Land' ? 'Land type' : tab === 'Commercial' ? 'Space type' : 'Property type'}
-              >
-                <option value="">
-                  {tab === 'Land' ? 'Any land type' : tab === 'Commercial' ? 'Any space' : 'Any type'}
-                </option>
-                {TYPES_BY_TAB[tab].map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-
-              <div className="hidden h-8 w-px shrink-0 bg-line sm:block" />
-
-              <select
-                value={priceRange}
-                onChange={(e) => setPriceRange(e.target.value)}
-                className="w-full shrink-0 rounded-xl border-0 bg-chip px-3 py-2.5 text-sm font-medium text-ink outline-none sm:w-auto sm:min-w-[8.5rem] sm:rounded-none sm:bg-transparent"
-                aria-label="Price range"
-              >
-                {PRICE_RANGES.map((r) => (
-                  <option key={r.label} value={r.label}>
-                    {r.label}
-                  </option>
-                ))}
-              </select>
-
-              <div className="hidden h-8 w-px shrink-0 bg-line sm:block" />
-
-              {tab === 'Land' ? (
-                <select
-                  value={landSize}
-                  onChange={(e) => setLandSize(e.target.value)}
-                  className="w-full shrink-0 rounded-xl border-0 bg-chip px-3 py-2.5 text-sm font-medium text-ink outline-none sm:w-auto sm:min-w-[8rem] sm:rounded-none sm:bg-transparent"
-                  aria-label="Land size"
-                >
-                  {LAND_SIZES.map((s) => (
-                    <option key={s.value || 'any'} value={s.value}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-              ) : tab === 'Commercial' ? (
-                <select
-                  value={landSize}
-                  onChange={(e) => setLandSize(e.target.value)}
-                  className="w-full shrink-0 rounded-xl border-0 bg-chip px-3 py-2.5 text-sm font-medium text-ink outline-none sm:w-auto sm:min-w-[8rem] sm:rounded-none sm:bg-transparent"
-                  aria-label="Floor size"
-                >
-                  {COMMERCIAL_SIZES.map((s) => (
-                    <option key={s.value || 'any'} value={s.value}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <select
-                  value={bedrooms}
-                  onChange={(e) => setBedrooms(e.target.value)}
-                  className="w-full shrink-0 rounded-xl border-0 bg-chip px-3 py-2.5 text-sm font-medium text-ink outline-none sm:w-auto sm:min-w-[7rem] sm:rounded-none sm:bg-transparent"
-                  aria-label="Bedrooms"
-                >
-                  <option value="">Any beds</option>
-                  {[1, 2, 3, 4, 5, 6].map((n) => (
-                    <option key={n} value={String(n)}>
-                      {n}+ bed
-                    </option>
-                  ))}
-                </select>
-              )}
-
+          <div className="mb-3 flex flex-wrap gap-1.5 sm:gap-2">
+            {SEARCH_TABS.map((t) => (
               <button
-                type="submit"
-                className="flex w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-brand-green px-6 py-3 text-sm font-bold text-white transition hover:bg-brand-green-dark sm:w-auto sm:rounded-full sm:px-8"
+                key={t}
+                type="button"
+                onClick={() => switchTab(t)}
+                className={`rounded-full px-4 py-2 text-xs font-bold transition sm:text-sm ${
+                  tab === t
+                    ? 'bg-white text-brand-green shadow-md'
+                    : 'bg-white/15 text-white backdrop-blur-sm hover:bg-white/25'
+                }`}
               >
-                <FaSearch /> Search
+                {t}
               </button>
-            </div>
-          </form>
-
-          {/* Google-style live search under the filter card — high z so dropdown clears next section */}
-          <div className="relative z-[60] mt-5 isolate">
-            <p className="mb-2 text-center text-[11px] font-semibold uppercase tracking-wider text-white/50">
-              Or search live across Nigeria
-            </p>
-            <GoogleLiveSearch />
+            ))}
           </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
+          <GoogleLiveSearch tab={tab} className="max-w-3xl" />
+
+          <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
             {[
               { value: '50,000+', label: 'Active listings' },
               { value: '3,000+', label: 'Active agents' },
@@ -1013,6 +799,12 @@ const HomePage = () => {
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         <AdSlot placement="footer_strip" />
       </div>
+
+      <FaqSection
+        title="Property questions, answered"
+        subtitle="Straight answers for buyers, renters and sellers — so you can move with confidence."
+        items={HOME_FAQS}
+      />
 
       <SiteFooter />
     </div>

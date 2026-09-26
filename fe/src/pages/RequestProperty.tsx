@@ -9,6 +9,8 @@ import SafetyTips from '@/components/trust/SafetyTips';
 import AdSlot from '@/components/ads/AdSlot';
 import { useToast } from '@/hooks/useToast';
 import { REQUESTS_SERVICE } from '@/services/requests';
+import FaqSection from '@/components/seo/FaqSection';
+import { REQUEST_FAQS } from '@/data/page-faqs';
 
 const STEPS = ['What you need', 'Budget & place', 'Contact', 'Review'];
 
@@ -415,6 +417,7 @@ const RequestProperty = () => {
         </aside>
       </div>
 
+      <FaqSection title="Property request FAQ" items={REQUEST_FAQS} />
       <SiteFooter />
     </div>
   );

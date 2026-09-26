@@ -26,6 +26,8 @@ import {
   SEO_TYPE_FACETS,
 } from '@/lib/locations';
 import { filterDemoListings } from '@/data/demo-listings';
+import FaqSection from '@/components/seo/FaqSection';
+import { LISTING_FAQS } from '@/data/page-faqs';
 
 const PROPERTY_TYPES = [
   'Duplex',
@@ -701,6 +703,11 @@ const PropertyList = ({ seoFilters, seoHeading, seoCanonicalPath }: Props = {}) 
         </div>
       )}
 
+      <FaqSection
+        title="Buying & renting FAQ"
+        subtitle="Quick answers while you browse this search."
+        items={LISTING_FAQS}
+      />
       <SiteFooter />
     </div>
   );

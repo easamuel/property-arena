@@ -91,6 +91,10 @@ export const usePropertyStore = create<PropertyStore>()(
       isSubmitting: false,
       enums: null,
       featuredListings: [],
+      listings: [],
+      meta: null,
+      loading: false,
+      error: null,
 
       fetchProperties: async (params = {}) => {
       try {

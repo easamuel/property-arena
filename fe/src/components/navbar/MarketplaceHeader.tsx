@@ -79,6 +79,7 @@ const NAV: NavItem[] = [
   },
   { type: 'link', label: 'Short Let', to: '/properties?purpose=shortlet&location=Nigeria' },
   { type: 'link', label: 'Land', to: '/properties?purpose=sale&propertyType=land&location=Nigeria' },
+  { type: 'link', label: 'Post Property', to: '/sell' },
   {
     type: 'mega',
     label: 'Explore',
@@ -96,7 +97,7 @@ const NAV: NavItem[] = [
         title: 'For professionals',
         links: [
           { label: 'Become an agent', to: '/signup?role=agent' },
-          { label: 'Sell a property', to: '/sell' },
+          { label: 'Post a property', to: '/sell' },
           { label: 'Plans & pricing', to: '/subscription' },
         ],
       },

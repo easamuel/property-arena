@@ -7,6 +7,7 @@ import {
   buildListingSearchUrl,
   resolveSearchLocation,
   searchPlaces,
+  type SearchTab,
 } from '@/lib/locations';
 
 type Hit = {
@@ -18,10 +19,23 @@ type Hit = {
   img: string;
 };
 
-type Props = { className?: string };
+type Props = {
+  className?: string;
+  /** Homepage purpose tab — drives placeholder + search destination */
+  tab?: SearchTab;
+  placeholder?: string;
+};
+
+const TAB_PLACEHOLDERS: Record<SearchTab, string> = {
+  Buy: 'Search homes for sale by area, state or keyword…',
+  Rent: 'Search rentals by area, estate or keyword…',
+  Land: 'Search land and plots by location…',
+  'Short Let': 'Search short lets and stays by area…',
+  Commercial: 'Search offices, shops and commercial space…',
+};
 
 /** Google-style live search — typeahead places + listings as you type. */
-export function GoogleLiveSearch({ className = '' }: Props) {
+export function GoogleLiveSearch({ className = '', tab = 'Buy', placeholder }: Props) {
   const navigate = useNavigate();
   const rootRef = useRef<HTMLDivElement>(null);
   const [q, setQ] = useState('');
@@ -30,6 +44,7 @@ export function GoogleLiveSearch({ className = '' }: Props) {
   const [loading, setLoading] = useState(false);
 
   const placeHints = useMemo(() => searchPlaces(q, 8), [q]);
+  const inputPlaceholder = placeholder || TAB_PLACEHOLDERS[tab];
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -120,27 +135,22 @@ export function GoogleLiveSearch({ className = '' }: Props) {
     const term = (raw ?? q).trim();
     setOpen(false);
     if (!term) {
-      navigate('/properties?location=Nigeria');
+      navigate(buildListingSearchUrl(tab, 'Nigeria'));
       return;
     }
     const place = resolveSearchLocation(term);
-    // Show all purposes for this place/query — don't lock to Buy/sale only
     if (place.state && place.state !== 'Nigeria') {
-      const loc = place.label;
-      navigate(
-        `/properties?location=${encodeURIComponent(loc)}&search=${encodeURIComponent(term)}`,
-      );
+      navigate(buildListingSearchUrl(tab, place.label));
       return;
     }
-    navigate(`/properties?location=${encodeURIComponent(term)}&search=${encodeURIComponent(term)}`);
+    navigate(buildListingSearchUrl(tab, term));
   };
 
   const goPlace = (label: string, state: string, area?: string) => {
     setQ(label);
     setOpen(false);
     const loc = area ? `${area}, ${state}` : state;
-    // Place chip → SEO for-sale path (catalog always includes sale stock per area)
-    navigate(buildListingSearchUrl('Buy', loc));
+    navigate(buildListingSearchUrl(tab, loc));
   };
 
   const onSubmit = (e: FormEvent) => {
@@ -151,7 +161,7 @@ export function GoogleLiveSearch({ className = '' }: Props) {
   const showPanel = open && (q.trim().length > 0 || placeHints.length > 0);
 
   return (
-    <div ref={rootRef} className={`relative z-[60] mx-auto w-full max-w-2xl ${className}`}>
+    <div ref={rootRef} className={`relative z-[60] mx-auto w-full max-w-3xl ${className}`}>
       <form onSubmit={onSubmit} className="relative">
         <div className="flex items-center gap-3 rounded-full border border-line bg-white px-5 py-3.5 shadow-lg transition focus-within:border-brand-green/40 focus-within:shadow-xl dark:bg-surface-elevated">
           <FaSearch className="shrink-0 text-ink-muted" />
@@ -162,7 +172,7 @@ export function GoogleLiveSearch({ className = '' }: Props) {
               setOpen(true);
             }}
             onFocus={() => setOpen(true)}
-            placeholder="Search properties, areas, states…"
+            placeholder={inputPlaceholder}
             className="min-w-0 flex-1 border-0 bg-transparent text-base text-ink outline-none placeholder:text-ink-muted"
             aria-label="Live property search"
             autoComplete="off"

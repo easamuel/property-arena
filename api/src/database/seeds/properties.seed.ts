@@ -6,6 +6,7 @@ import { ROLE_ENUM } from '@modules/user/schemas/user.schema';
 import { DB_TABLE_NAMES } from '@shared/constants';
 import {
   CURRENCY_TYPE,
+  FEATURED_STATUS,
   LISTING_PURPOSE,
   PRICE_FREQUENCY,
   PROPERTY_STATUS,
@@ -112,9 +113,37 @@ export async function seedNationwideProperties(app: INestApplication): Promise<v
   const userService = app.get(UserService);
 
   const existingCount = await propertyModel.countDocuments({ isDeleted: { $ne: true } });
-  if (existingCount >= 80) {
-    // eslint-disable-next-line no-console
-    console.log(`[seed] Properties already seeded (${existingCount}) — skip`);
+  if (existingCount >= 40) {
+    const featuredCount = await propertyModel.countDocuments({
+      isDeleted: { $ne: true },
+      isFeatured: true,
+    });
+    if (featuredCount < 4) {
+      const end = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+      const sample = await propertyModel.find({ isDeleted: { $ne: true } }).limit(8).exec();
+      await Promise.all(
+        sample.map((doc, i) =>
+          propertyModel.updateOne(
+            { _id: doc._id },
+            {
+              $set: {
+                isFeatured: true,
+                featuredStatus: FEATURED_STATUS.FEATURED,
+                featuredStartDate: new Date(),
+                featuredEndDate: end,
+                featuredPriority: 10 - i,
+                featuredViewCount: 0,
+              },
+            },
+          ),
+        ),
+      );
+      // eslint-disable-next-line no-console
+      console.log(`[seed] Marked ${sample.length} existing properties as featured`);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log(`[seed] Properties already seeded (${existingCount}) — skip`);
+    }
     return;
   }
 
@@ -190,6 +219,16 @@ export async function seedNationwideProperties(app: INestApplication): Promise<v
       owner: ownerId,
       isDeleted: false,
       propertyId: `SEED-${String(i + 1).padStart(4, '0')}`,
+      ...(i < 8
+        ? {
+            isFeatured: true,
+            featuredStatus: FEATURED_STATUS.FEATURED,
+            featuredStartDate: new Date(),
+            featuredEndDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+            featuredPriority: 10 - i,
+            featuredViewCount: 0,
+          }
+        : {}),
     });
   }
 

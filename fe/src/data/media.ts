@@ -1,7 +1,7 @@
 /** Curated residential/commercial photography — Unsplash CDN, wide crops for cards & heroes. */
 export const MEDIA = {
   hero:
-    'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2000&auto=format&fit=crop',
   duplex:
     'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=900&auto=format&fit=crop',
   duplexNight:
