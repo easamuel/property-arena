@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   FaBath,
@@ -533,7 +533,7 @@ const PropertyDetailPage = () => {
                   </button>
                 </div>
                 <div className="hidden grid-rows-3 gap-1 md:grid">
-                  {thumbs.slice(1, 4).map((src, i) => (
+                  {thumbs.slice(1, 4).map((src: string, i: number) => (
                     <button
                       key={`${src}-${i}`}
                       type="button"
