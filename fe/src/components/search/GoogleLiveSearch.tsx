@@ -48,6 +48,8 @@ const PROPERTY_TYPES = [
   { value: 'commercial property', label: 'Commercial' },
 ];
 
+const LAND_PROPERTY_TYPES = [{ value: 'land', label: 'Land / plot' }];
+
 const BED_OPTIONS = [
   { value: '', label: 'Any beds' },
   { value: '1', label: '1+' },
@@ -99,12 +101,12 @@ export function GoogleLiveSearch({ className = '', tab = 'Buy', placeholder }: P
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
 
-  // Reset land-incompatible filters when switching tabs
+  // Lock Land/Commercial filters to the correct property type
   useEffect(() => {
     setFilters((prev) => {
-      if (tab === 'Land') return { ...prev, bedroom: '', propertyType: prev.propertyType || 'land' };
+      if (tab === 'Land') return { ...prev, bedroom: '', propertyType: 'land' };
       if (tab === 'Commercial')
-        return { ...prev, bedroom: '', propertyType: prev.propertyType || 'commercial property' };
+        return { ...prev, bedroom: '', propertyType: 'commercial property' };
       return prev;
     });
   }, [tab]);
@@ -319,11 +321,12 @@ export function GoogleLiveSearch({ className = '', tab = 'Buy', placeholder }: P
             <label className="block text-xs font-semibold text-gray-600">
               Property type
               <select
-                value={filters.propertyType}
+                value={tab === 'Land' ? 'land' : filters.propertyType}
                 onChange={(e) => setFilters((f) => ({ ...f, propertyType: e.target.value }))}
-                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-800"
+                disabled={tab === 'Land'}
+                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-800 disabled:opacity-70"
               >
-                {PROPERTY_TYPES.map((o) => (
+                {(tab === 'Land' ? LAND_PROPERTY_TYPES : PROPERTY_TYPES).map((o) => (
                   <option key={o.label} value={o.value}>
                     {o.label}
                   </option>
@@ -371,7 +374,15 @@ export function GoogleLiveSearch({ className = '', tab = 'Buy', placeholder }: P
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
             <button
               type="button"
-              onClick={() => setFilters(emptyFilters())}
+              onClick={() =>
+                setFilters(
+                  tab === 'Land'
+                    ? { ...emptyFilters(), propertyType: 'land' }
+                    : tab === 'Commercial'
+                      ? { ...emptyFilters(), propertyType: 'commercial property' }
+                      : emptyFilters(),
+                )
+              }
               className="text-xs font-semibold text-gray-500 hover:text-gray-800"
             >
               Clear filters

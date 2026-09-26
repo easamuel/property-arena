@@ -13,6 +13,7 @@ import Logo from '@/components/brand/Logo';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useLayoutMode } from '@/hooks/useLayoutMode';
 import DashboardModeSwitcher from '@/components/DashboardModeSwitcher';
+import { getSavedCount, subscribeSaved } from '@/lib/savedListings';
 
 type MegaLink = { label: string; to: string; hint?: string };
 type MegaColumn = { title: string; links: MegaLink[] };
@@ -121,6 +122,7 @@ const MarketplaceHeader = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openMega, setOpenMega] = useState<string | null>(null);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
+  const [savedCount, setSavedCount] = useState(0);
   const navRef = useRef<HTMLElement>(null);
   const initials = user?.name?.[0] || user?.email?.[0] || 'U';
   const role = String(user?.role || '').toLowerCase();
@@ -130,11 +132,20 @@ const MarketplaceHeader = () => {
       : ['agent', 'developer', 'landlord', 'agency'].includes(role)
         ? '/workspace'
         : '/buyer';
+  const savedTo = ['agent', 'developer', 'landlord', 'agency', 'admin'].includes(role)
+    ? accountTo
+    : '/buyer/saved';
   const canUseWorkspace = ['agent', 'developer', 'landlord', 'agency', 'admin'].includes(role);
+  const showSavedHeart = !isAuthenticated || savedCount > 0;
 
   const openWorkspace = () => {
     if (canUseWorkspace) setLayoutMode('main');
   };
+
+  useEffect(() => {
+    setSavedCount(getSavedCount());
+    return subscribeSaved(() => setSavedCount(getSavedCount()));
+  }, []);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -249,19 +260,30 @@ const MarketplaceHeader = () => {
           >
             {theme === 'dark' ? <FaSun className="text-amber-400" /> : <FaMoon />}
           </button>
-          <Link
-            to={isAuthenticated ? accountTo : `/login?redirect=${accountTo}`}
-            onClick={openWorkspace}
-            aria-label="Saved"
-            className="rounded-full p-2 text-ink-muted transition hover:bg-chip hover:text-brand-red"
-          >
-            <FaHeart />
-          </Link>
+          {showSavedHeart ? (
+            <Link
+              to={isAuthenticated ? savedTo : `/login?redirect=${encodeURIComponent('/buyer/saved')}`}
+              onClick={isAuthenticated ? openWorkspace : undefined}
+              aria-label={savedCount ? `Saved listings (${savedCount})` : 'Saved'}
+              className={`relative rounded-full p-2 transition hover:bg-chip ${
+                isAuthenticated
+                  ? 'hidden text-brand-red sm:inline-flex'
+                  : 'text-ink-muted hover:text-brand-red'
+              }`}
+            >
+              <FaHeart className={savedCount ? 'fill-current' : undefined} />
+              {savedCount > 0 ? (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-red px-1 text-[10px] font-bold text-white">
+                  {savedCount > 9 ? '9+' : savedCount}
+                </span>
+              ) : null}
+            </Link>
+          ) : null}
           {isAuthenticated ? (
             <Link
               to={accountTo}
               onClick={openWorkspace}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-green text-sm font-bold uppercase text-white"
+              className="hidden h-9 w-9 items-center justify-center rounded-full bg-brand-green text-sm font-bold uppercase text-white sm:flex"
               aria-label="Account"
             >
               {initials}
@@ -374,6 +396,15 @@ const MarketplaceHeader = () => {
                 >
                   Open dashboard
                 </Link>
+                {savedCount > 0 ? (
+                  <Link
+                    to={savedTo}
+                    onClick={closeAll}
+                    className="flex items-center justify-center gap-2 rounded-xl border border-line px-3 py-2.5 text-sm font-semibold text-brand-red"
+                  >
+                    <FaHeart className="fill-current" /> Saved ({savedCount})
+                  </Link>
+                ) : null}
                 {canUseWorkspace && layoutMode === 'user' && (
                   <button
                     type="button"
@@ -391,11 +422,9 @@ const MarketplaceHeader = () => {
                     Switch to workspace view
                   </button>
                 )}
-                {isAuthenticated && (
-                  <div className="pt-1 sm:hidden">
-                    <DashboardModeSwitcher className="w-full justify-center" />
-                  </div>
-                )}
+                <div className="pt-1 sm:hidden">
+                  <DashboardModeSwitcher className="w-full justify-center" />
+                </div>
               </div>
             )}
           </nav>

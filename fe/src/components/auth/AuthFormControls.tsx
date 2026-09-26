@@ -270,13 +270,21 @@ export const AlertBanner: React.FC<{
   );
 };
 
-export const DevLinkBox: React.FC<{ link?: string }> = ({ link }) => {
+export const DevLinkBox: React.FC<{ link?: string; label?: string }> = ({
+  link,
+  label = 'Reset link',
+}) => {
   if (!link) return null;
   return (
-    <div className="mt-5 rounded-xl border border-dashed border-amber-300 bg-amber-50 p-3 text-left text-xs text-amber-900">
-      <p className="mb-1 font-semibold uppercase tracking-wide">Development link</p>
-      <p className="mb-2 text-amber-800">Email delivery isn&apos;t configured, so here is the link directly:</p>
-      <a href={link} className="break-all font-mono text-amber-900 underline hover:text-amber-700">
+    <div className="mt-5 rounded-xl border border-dashed border-amber-300 bg-amber-50 p-3 text-left text-xs text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100">
+      <p className="mb-1 font-semibold uppercase tracking-wide">{label}</p>
+      <p className="mb-2 text-amber-800 dark:text-amber-200/90">
+        Use this secure link to continue (also check spam if you expected an email):
+      </p>
+      <a
+        href={link}
+        className="break-all font-mono text-amber-900 underline hover:text-amber-700 dark:text-amber-100"
+      >
         {link}
       </a>
     </div>

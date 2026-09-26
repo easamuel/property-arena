@@ -142,6 +142,7 @@ export class AuthService {
     const email = payload.email.trim().toLowerCase();
     const user = await this.userService.findOne({ email, isDeleted: false });
     let devLink: string | undefined;
+    let emailed = false;
 
     if (user) {
       const { token, tokenHash, expires } = this.generateToken(
@@ -151,19 +152,30 @@ export class AuthService {
         { _id: user.id },
         { passwordResetTokenHash: tokenHash, passwordResetExpires: expires },
       );
-      devLink = this.deliverAuthLink(
+      const link = this.buildFrontendLink('/reset-password', token);
+      const result = await this.deliverAuthLinkAsync(
         'reset-password',
         email,
-        this.buildFrontendLink('/reset-password', token),
+        link,
       );
+      emailed = result.emailed;
+      // Always return the link when email failed so the user is never stuck.
+      // Also return in non-production for DevLinkBox testing.
+      if (!emailed || process.env.NODE_ENV !== 'production') {
+        devLink = result.link;
+      }
     } else {
       this.logger.info('Password reset requested for unknown email');
     }
 
     return {
-      message:
-        'If an account exists for that email, a password reset link has been sent.',
-      data: devLink ? { devLink } : {},
+      message: emailed
+        ? 'If an account exists for that email, a password reset link has been sent.'
+        : 'If an account exists for that email, use the reset link below (email delivery was unavailable).',
+      data: {
+        ...(devLink ? { devLink } : {}),
+        emailed,
+      },
     };
   }
 
@@ -296,13 +308,9 @@ export class AuthService {
     email: string,
     link: string,
   ): string | undefined {
+    // Fire delivery; callers that need confirmation should use deliverAuthLinkAsync
+    void this.deliverAuthLinkAsync(kind, email, link);
     const isProduction = process.env.NODE_ENV === 'production';
-    void this.sendAuthEmail(kind, email, link).catch((err) => {
-      this.logger.warn(`Auth email delivery failed (${kind})`, {
-        email,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    });
     this.logger.info(`Auth email link generated (${kind})`, {
       email,
       ...(isProduction ? {} : { link }),
@@ -310,29 +318,45 @@ export class AuthService {
     return isProduction ? undefined : link;
   }
 
-  private async sendAuthEmail(
+  /** Awaitable delivery — preferred for forgot-password so we know if mail left the server. */
+  private async deliverAuthLinkAsync(
     kind: 'verify-email' | 'reset-password',
     email: string,
     link: string,
-  ) {
-    if (this.mailService.isConfigured()) {
-      const ok = await this.mailService.sendAuthLink(kind, email, link);
-      if (ok) return;
+  ): Promise<{ emailed: boolean; link: string }> {
+    try {
+      let ok = false;
+      if (this.mailService.isConfigured()) {
+        ok = await this.mailService.sendAuthLink(kind, email, link);
+      }
+      // Fall back to SMTP / webhook if Resend is missing or rejected the send
+      if (!ok) {
+        ok = await this.sendSmtpOrWebhook(kind, email, link);
+      }
+      this.logger.info(`Auth email delivery (${kind})`, {
+        email,
+        emailed: ok,
+        ...(ok ? {} : { link }),
+      });
+      return { emailed: ok, link };
+    } catch (err) {
+      this.logger.warn(`Auth email delivery failed (${kind})`, {
+        email,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      return { emailed: false, link };
     }
+  }
 
+  private async sendSmtpOrWebhook(
+    kind: 'verify-email' | 'reset-password',
+    email: string,
+    link: string,
+  ): Promise<boolean> {
     const host = process.env.AUTH_SMTP_HOST;
     const user = process.env.AUTH_SMTP_USER;
     const pass = process.env.AUTH_SMTP_PASS;
     const from = process.env.AUTH_SMTP_FROM || user;
-    if (!host || !user || !pass || !from) {
-      if (!this.mailService.isConfigured()) {
-        this.logger.warn('No Resend or SMTP configured — auth email not sent', {
-          kind,
-          email,
-        });
-      }
-      return;
-    }
     const subject =
       kind === 'reset-password'
         ? 'Reset your PropertyArena password'
@@ -343,12 +367,19 @@ export class AuthService {
         : `Verify your email: ${link}\n\nWelcome to PropertyArena.`;
     const webhook = process.env.AUTH_EMAIL_WEBHOOK;
     if (webhook) {
-      await fetch(webhook, {
+      const res = await fetch(webhook, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ to: email, from, subject, text, link, kind }),
       });
-      return;
+      return res.ok;
+    }
+    if (!host || !user || !pass || !from) {
+      this.logger.warn('No Resend or SMTP configured — auth email not sent', {
+        kind,
+        email,
+      });
+      return false;
     }
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -370,11 +401,25 @@ export class AuthService {
         text,
         html: `<p>${text.replace(/\n/g, '<br/>')}</p>`,
       });
-    } catch {
-      this.logger.warn(
-        'SMTP configured but nodemailer unavailable; set RESEND_API_KEY or AUTH_EMAIL_WEBHOOK',
-      );
+      return true;
+    } catch (err) {
+      this.logger.warn('SMTP send failed', {
+        error: err instanceof Error ? err.message : String(err),
+      });
+      return false;
     }
+  }
+
+  private async sendAuthEmail(
+    kind: 'verify-email' | 'reset-password',
+    email: string,
+    link: string,
+  ) {
+    if (this.mailService.isConfigured()) {
+      const ok = await this.mailService.sendAuthLink(kind, email, link);
+      if (ok) return;
+    }
+    await this.sendSmtpOrWebhook(kind, email, link);
   }
 
   async login(payload: LoginDto) {

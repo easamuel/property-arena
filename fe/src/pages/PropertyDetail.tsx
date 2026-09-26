@@ -40,6 +40,7 @@ import {
   buildRichListingDescription,
 } from '@/lib/listingInsights';
 import { getGuideInsights } from '@/lib/guideInsights';
+import { isListingSaved, toggleSavedListing, subscribeSaved } from '@/lib/savedListings';
 
 const FALLBACK_MEDIA = [
   MEDIA.duplex,
@@ -91,6 +92,13 @@ const PropertyDetailPage = () => {
   const [reviews, setReviews] = useState<PublicReview[]>([]);
   const [reviewForm, setReviewForm] = useState({ name: '', rating: 5, body: '' });
   const [reviewBusy, setReviewBusy] = useState(false);
+
+  useEffect(() => {
+    if (!propertyId) return;
+    const sync = () => setSaved(isListingSaved(propertyId));
+    sync();
+    return subscribeSaved(sync);
+  }, [propertyId]);
 
   useEffect(() => {
     if (!propertyId) return;
@@ -411,94 +419,11 @@ const PropertyDetailPage = () => {
         </div>
 
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="min-w-0 space-y-5">
-            {/* Title card — price + CTAs above gallery (NPC pattern) */}
-            <article className="rounded-2xl bg-surface-elevated p-5 shadow-sm ring-1 ring-line sm:p-6">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
-                    {(apiProperty as PropertyFormData & { isFeatured?: boolean })?.isFeatured || !apiProperty ? (
-                      <span className="rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-900 dark:bg-amber-500/20 dark:text-amber-200">
-                        Premium
-                      </span>
-                    ) : null}
-                    <span className="inline-flex items-center gap-1 rounded-md bg-brand-green/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-green">
-                      <FaCheckCircle /> Verified agent
-                    </span>
-                    {badge.badgeLabel && (
-                      <SubscriberBadge label={badge.badgeLabel} color={badge.badgeColor || undefined} />
-                    )}
-                  </div>
-                  <p className="text-sm font-semibold capitalize text-brand-red">{categoryLabel}</p>
-                  <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
-                    {title}
-                  </h1>
-                  <p className="mt-2 flex items-start gap-1.5 text-sm text-ink-muted">
-                    <FaMapMarkerAlt className="mt-0.5 shrink-0 text-brand-red" />
-                    {location}
-                  </p>
-                  <p className="mt-2 text-xs text-ink-muted">
-                    Ref: {refId} · Updated recently · {media.length} photos
-                  </p>
-                </div>
-                <div className="text-left sm:text-right">
-                  <p className="text-3xl font-extrabold text-ink sm:text-4xl">
-                    {price > 0 ? `₦${price.toLocaleString()}` : 'Price on request'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-5 flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowPhone((v) => !v)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-brand-green px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-green-dark"
-                >
-                  <FaPhoneAlt className="text-xs" />
-                  {showPhone ? '0800 123 4567' : 'Call agent'}
-                </button>
-                <a
-                  href={`https://wa.me/?text=${encodeURIComponent(`Hi, I'm interested in ${title} (${refId}) on PropertyArena`)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#128C7E] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#0e7a6e]"
-                >
-                  <FaWhatsapp /> WhatsApp
-                </a>
-                <div className="ml-auto flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSaved((v) => !v)}
-                    className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold ${
-                      saved
-                        ? 'border-brand-red/40 bg-brand-red/5 text-brand-red'
-                        : 'border-line text-ink-secondary hover:bg-chip'
-                    }`}
-                  >
-                    <FaHeart /> {saved ? 'Saved' : 'Save'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={share}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-line px-3 py-2 text-xs font-semibold text-ink-secondary hover:bg-chip"
-                  >
-                    <FaShareAlt /> Share
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setReportOpen(true)}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-line px-3 py-2 text-xs font-semibold text-ink-secondary hover:bg-chip"
-                  >
-                    <FaFlag /> Report
-                  </button>
-                </div>
-              </div>
-            </article>
-
-            {/* Gallery */}
-            <div className="overflow-hidden rounded-2xl bg-surface-elevated shadow-sm ring-1 ring-line">
+          <div className="flex min-w-0 flex-col gap-5 pb-24 lg:pb-0">
+            {/* Gallery first on mobile so the listing reads as a property page */}
+            <div className="order-1 overflow-hidden rounded-2xl bg-surface-elevated shadow-sm ring-1 ring-line lg:order-2">
               <div className="grid gap-1 p-1 md:grid-cols-[1fr_180px]">
-                <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-chip sm:aspect-[16/9]">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-chip sm:aspect-[16/10] md:aspect-[16/9]">
                   <img
                     src={media[mainIdx]}
                     alt={title}
@@ -548,6 +473,98 @@ const PropertyDetailPage = () => {
                 </div>
               </div>
             </div>
+
+            {/* Title + price — stacked on mobile so the headline never squeezes */}
+            <article className="order-2 rounded-2xl bg-surface-elevated p-4 shadow-sm ring-1 ring-line sm:p-6 lg:order-1">
+              <div className="flex flex-wrap items-center gap-2">
+                {(apiProperty as PropertyFormData & { isFeatured?: boolean })?.isFeatured || !apiProperty ? (
+                  <span className="rounded-md bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-900 dark:bg-amber-500/20 dark:text-amber-200">
+                    Premium
+                  </span>
+                ) : null}
+                <span className="inline-flex items-center gap-1 rounded-md bg-brand-green/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-green">
+                  <FaCheckCircle /> Verified agent
+                </span>
+                {badge.badgeLabel && (
+                  <SubscriberBadge label={badge.badgeLabel} color={badge.badgeColor || undefined} />
+                )}
+                <p className="ml-auto text-2xl font-extrabold text-ink sm:text-3xl">
+                  {price > 0 ? `₦${price.toLocaleString()}` : 'Price on request'}
+                </p>
+              </div>
+
+              <p className="mt-3 text-sm font-semibold text-brand-red">{categoryLabel}</p>
+              <h1 className="mt-1 break-words text-xl font-extrabold leading-snug tracking-tight text-ink sm:text-2xl lg:text-3xl">
+                {title}
+              </h1>
+              <div className="mt-3 border-t border-line pt-3">
+                <p className="text-base font-bold text-ink">{cityHint}</p>
+                <p className="mt-1 flex items-start gap-1.5 text-sm text-ink-muted">
+                  <FaMapMarkerAlt className="mt-0.5 shrink-0 text-brand-red" />
+                  <span className="min-w-0 break-words">{location}</span>
+                </p>
+                <p className="mt-2 text-xs text-ink-muted">
+                  Ref: {refId} · Updated recently · {media.length} photos
+                </p>
+              </div>
+
+              <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                <button
+                  type="button"
+                  onClick={() => setShowPhone((v) => !v)}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-green px-4 py-3 text-sm font-bold text-white hover:bg-brand-green-dark sm:flex-none"
+                >
+                  <FaPhoneAlt className="text-xs" />
+                  {showPhone ? '0800 123 4567' : 'Call agent'}
+                </button>
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`Hi, I'm interested in ${title} (${refId}) on PropertyArena`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#128C7E] px-4 py-3 text-sm font-bold text-white hover:bg-[#0e7a6e] sm:flex-none"
+                >
+                  <FaWhatsapp /> WhatsApp
+                </a>
+                <div className="grid grid-cols-3 gap-2 sm:ml-auto sm:flex sm:flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!propertyId) return;
+                      const nowSaved = toggleSavedListing({
+                        id: propertyId,
+                        title,
+                        location,
+                        price,
+                        thumb: media[0],
+                      });
+                      setSaved(nowSaved);
+                      toast.success(nowSaved ? 'Saved to your likes' : 'Removed from likes');
+                    }}
+                    className={`inline-flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-xs font-semibold ${
+                      saved
+                        ? 'border-brand-red/40 bg-brand-red/5 text-brand-red'
+                        : 'border-line text-ink-secondary hover:bg-chip'
+                    }`}
+                  >
+                    <FaHeart className={saved ? 'fill-current' : undefined} /> {saved ? 'Saved' : 'Save'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={share}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-line px-3 py-2.5 text-xs font-semibold text-ink-secondary hover:bg-chip"
+                  >
+                    <FaShareAlt /> Share
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReportOpen(true)}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-line px-3 py-2.5 text-xs font-semibold text-ink-secondary hover:bg-chip"
+                  >
+                    <FaFlag /> Report
+                  </button>
+                </div>
+              </div>
+            </article>
 
             {/* Specs strip */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

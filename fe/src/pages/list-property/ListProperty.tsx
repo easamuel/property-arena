@@ -58,8 +58,8 @@ const purposeFromTxn = (t: string) => {
 };
 
 const typeFromTxn = (t: string): string | undefined => {
-  if (t === 'Land') return 'Land';
-  if (t === 'Commercial') return 'Commercial';
+  if (t === 'Land') return 'land';
+  if (t === 'Commercial') return 'commercial property';
   return undefined;
 };
 

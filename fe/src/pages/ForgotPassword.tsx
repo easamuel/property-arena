@@ -31,6 +31,7 @@ const ForgotPassword: React.FC = () => {
   const [resending, setResending] = useState(false);
   const [sent, setSent] = useState(false);
   const [devLink, setDevLink] = useState<string>();
+  const [emailed, setEmailed] = useState(true);
   const [apiError, setApiError] = useState('');
   const toast = useToast();
 
@@ -43,6 +44,7 @@ const ForgotPassword: React.FC = () => {
   const request = async () => {
     const res = await AUTH_SERVICE.forgotPassword(email.trim().toLowerCase());
     setDevLink(res.data?.devLink);
+    setEmailed(typeof res.data?.emailed === 'boolean' ? res.data.emailed : !res.data?.devLink);
     return res;
   };
 
@@ -81,10 +83,21 @@ const ForgotPassword: React.FC = () => {
           <StatusIcon tone="success">
             <FiMail size={28} />
           </StatusIcon>
-          <h2 className="text-2xl font-bold tracking-tight text-ink">Check your email</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-ink">
+            {emailed ? 'Check your email' : 'Reset link ready'}
+          </h2>
           <p className="mt-2 text-sm text-ink-muted">
-            If an account exists for <span className="font-semibold text-ink">{email.trim()}</span>,
-            you&apos;ll receive a link to reset your password. The link expires in 1 hour.
+            {emailed ? (
+              <>
+                If an account exists for <span className="font-semibold text-ink">{email.trim()}</span>,
+                you&apos;ll receive a link to reset your password. The link expires in 1 hour.
+              </>
+            ) : (
+              <>
+                We couldn&apos;t send email from the server right now. Use the secure reset link below
+                (valid for 1 hour), or ask an admin to set <code className="text-xs">RESEND_API_KEY</code>.
+              </>
+            )}
           </p>
           <div className="mt-6 space-y-3">
             <AuthButton type="button" variant="secondary" loading={resending} loadingText="Resending…" onClick={onResend}>
@@ -98,8 +111,10 @@ const ForgotPassword: React.FC = () => {
               Use a different email
             </button>
           </div>
-          <p className="mt-5 text-xs text-ink-muted">Didn&apos;t get it? Check your spam or promotions folder.</p>
-          <DevLinkBox link={devLink} />
+          {emailed ? (
+            <p className="mt-5 text-xs text-ink-muted">Didn&apos;t get it? Check your spam or promotions folder.</p>
+          ) : null}
+          <DevLinkBox link={devLink} label={emailed ? 'Also available' : 'Your reset link'} />
         </div>
       </AuthLayout>
     );

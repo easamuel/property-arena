@@ -5,6 +5,7 @@ export interface AuthMessageResponse {
   message: string;
   data?: {
     devLink?: string;
+    emailed?: boolean;
     email?: string;
     user?: Record<string, unknown>;
     tokens?: { accessToken?: string };
