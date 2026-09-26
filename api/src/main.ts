@@ -64,6 +64,16 @@ async function bootstrap() {
   server.setTimeout(1200000);
   logger.log('Server started on port ' + listenPort);
 
+  const resendKey = process.env.RESEND_API_KEY?.trim();
+  const resendFrom = process.env.RESEND_FROM_EMAIL?.trim();
+  if (resendKey) {
+    logger.log(
+      `Resend configured (key ${resendKey.slice(0, 6)}…, from: ${resendFrom || 'default'})`,
+    );
+  } else {
+    logger.warn('RESEND_API_KEY missing — auth/newsletter emails will NOT send');
+  }
+
   // Dev seeds by default; production only when SEED_ON_BOOT=true (run once, then turn off).
   const shouldSeed =
     process.env.SEED_ON_BOOT === 'true' ||
