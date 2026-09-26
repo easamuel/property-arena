@@ -12,8 +12,6 @@ import {
   isValidEmail,
 } from '@/components/auth/AuthFormControls';
 
-const DASHBOARD_ROLES = ['agent', 'developer', 'landlord'];
-
 const getSafeRedirect = (value: string | null) =>
   value && value.startsWith('/') && !value.startsWith('//') && !value.startsWith('/\\')
     ? value
@@ -22,8 +20,7 @@ const getSafeRedirect = (value: string | null) =>
 const getRoleHome = (role?: string) => {
   const r = role?.toLowerCase();
   if (r === 'admin') return '/admin';
-  if (r && DASHBOARD_ROLES.includes(r)) return '/dashboard';
-  return '/';
+  return '/dashboard';
 };
 
 type Errors = { email?: string; password?: string };

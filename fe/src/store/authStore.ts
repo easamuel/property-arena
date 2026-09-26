@@ -40,6 +40,7 @@ interface AuthState {
   logout: () => void;
 
   setUser: (user: any | null) => void;
+  setSession: (user: any, accessToken: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -100,6 +101,11 @@ export const useAuthStore = create<AuthState>()(
 
       setUser: (user) => {
         set({ user });
+      },
+
+      setSession: (user, accessToken) => {
+        localStorage.setItem(REMEMBER_KEY, '1');
+        set({ user, accessToken });
       },
     }),
     {

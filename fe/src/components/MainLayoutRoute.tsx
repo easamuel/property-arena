@@ -1,17 +1,20 @@
 // src/components/MainLayoutRoute.tsx
-import { Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useLayoutMode } from '@/hooks/useLayoutMode';
 
 interface Props {
   children: React.ReactNode;
 }
 
+/** Ensures agent/workspace routes use the sidebar shell — never bounce to home. */
 export const MainLayoutRoute = ({ children }: Props) => {
-  const { layoutMode } = useLayoutMode();
+  const { layoutMode, setLayoutMode } = useLayoutMode();
 
-  if (layoutMode !== 'main') {
-    return <Navigate to="/" replace />;
-  }
+  useEffect(() => {
+    if (layoutMode !== 'main') {
+      setLayoutMode('main');
+    }
+  }, [layoutMode, setLayoutMode]);
 
   return <>{children}</>;
 };

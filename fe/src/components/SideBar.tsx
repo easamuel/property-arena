@@ -4,56 +4,61 @@ import {
   FaTachometerAlt,
   FaPlusCircle,
   FaListAlt,
-  FaUsers,
   FaRegCreditCard,
-  FaChartBar,
   FaUser,
-  FaGlobe,
-  FaEnvelope,
-  FaHeart,
   FaSignOutAlt,
   FaHome,
+  FaSearch,
+  FaMapMarkedAlt,
+  FaClipboardList,
 } from 'react-icons/fa';
 import { useAuthStore } from '@/store/authStore';
 import { useLayoutMode } from '@/hooks/useLayoutMode';
 import Logo from '@/components/brand/Logo';
 
-const tabs = [
-  // { name: 'Home', icon: <FaHome />, route: '/' },
+const PRO_ROLES = new Set(['agent', 'developer', 'landlord', 'admin']);
+
+const proTabs = [
   { name: 'Dashboard', icon: <FaTachometerAlt />, route: '/dashboard' },
   { name: 'Post a property', icon: <FaPlusCircle />, route: '/create-property' },
   { name: 'My Listing', icon: <FaListAlt />, route: '/my-listing' },
-  // { name: 'Manage leads', icon: <FaUsers />, route: '/manage-leads' },
   { name: 'Subscription', icon: <FaRegCreditCard />, route: '/subscription' },
-  // { name: 'Stats', icon: <FaChartBar />, route: '/stats' },
   { name: 'Profile', icon: <FaUser />, route: '/profile' },
-  // { name: 'My Website', icon: <FaGlobe />, route: '/my-website' },
-  // { name: 'My Messages', icon: <FaEnvelope />, route: '/messages' },
-  // { name: 'Favourites', icon: <FaHeart />, route: '/favourites' },  
+];
+
+const buyerTabs = [
+  { name: 'Dashboard', icon: <FaTachometerAlt />, route: '/dashboard' },
+  { name: 'Browse', icon: <FaSearch />, route: '/properties' },
+  { name: 'My requests', icon: <FaClipboardList />, route: '/dashboard/requests' },
+  { name: 'Neighbourhoods', icon: <FaMapMarkedAlt />, route: '/neighbourhood' },
+  { name: 'Profile', icon: <FaUser />, route: '/profile' },
 ];
 
 type SideBarProps = {
   onClose?: () => void;
 };
 
-const SideBar: React.FC<SideBarProps> = ({onClose}) => {
+const SideBar: React.FC<SideBarProps> = ({ onClose }) => {
   const logout = useAuthStore((state) => state.logout);
+  const role = String(useAuthStore((state) => state.user?.role) || 'user').toLowerCase();
   const navigate = useNavigate();
-  const { setLayoutMode } = useLayoutMode(); 
+  const { setLayoutMode } = useLayoutMode();
+  const tabs = PRO_ROLES.has(role) ? proTabs : buyerTabs;
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
   const handleHomeClick = () => {
-    setLayoutMode('user');  // Switch to the 'user' layout mode
-    navigate('/');  // Navigate to Home page
+    setLayoutMode('user');
+    navigate('/');
   };
+
   return (
-    <div className="bg-sec-dark-blue w-64 text-white min-h-screen">
-      <div className="flex justify-between items-center px-4 py-3 md:hidden">
+    <div className="min-h-screen w-64 bg-sec-dark-blue text-white">
+      <div className="flex items-center justify-between px-4 py-3 md:hidden">
         <span className="font-bold">Menu</span>
-        <button onClick={onClose} className="text-white text-xl">
+        <button type="button" onClick={onClose} className="text-xl text-white">
           ✕
         </button>
       </div>
@@ -65,22 +70,26 @@ const SideBar: React.FC<SideBarProps> = ({onClose}) => {
         <nav className="space-y-2">
           <div className="mb-8">
             <button
+              type="button"
               onClick={handleHomeClick}
-              className="flex items-center gap-3 px-4 py-2 w-full rounded-md text-white hover:bg-gray-800 transition-colors">
-              <span className="text-lg"><FaHome /></span>
-              <span className="text-sm font-medium">Home</span>
+              className="flex w-full items-center gap-3 rounded-md px-4 py-2 text-white transition-colors hover:bg-gray-800"
+            >
+              <span className="text-lg">
+                <FaHome />
+              </span>
+              <span className="text-sm font-medium">Marketplace</span>
             </button>
           </div>
           {tabs.map((tab) => (
             <NavLink
               key={tab.route}
               to={tab.route}
-              end
+              end={tab.route === '/dashboard'}
+              onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-2 w-full rounded-md transition-colors
-                ${isActive
-                  ? 'bg-white text-black'
-                  : 'hover:bg-gray-800 text-white'}`
+                `flex w-full items-center gap-3 rounded-md px-4 py-2 transition-colors ${
+                  isActive ? 'bg-white text-black' : 'text-white hover:bg-gray-800'
+                }`
               }
             >
               <span className="text-lg">{tab.icon}</span>
@@ -89,11 +98,14 @@ const SideBar: React.FC<SideBarProps> = ({onClose}) => {
           ))}
         </nav>
         <button
+          type="button"
           onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-2 w-full rounded-md text-white hover:bg-gray-800 transition-colors"
+          className="mt-4 flex w-full items-center gap-3 rounded-md px-4 py-2 text-white transition-colors hover:bg-gray-800"
         >
-          <span className="text-lg"><FaSignOutAlt /></span>
-          <span className="text-sm font-medium">Signout</span>
+          <span className="text-lg">
+            <FaSignOutAlt />
+          </span>
+          <span className="text-sm font-medium">Sign out</span>
         </button>
       </div>
     </div>

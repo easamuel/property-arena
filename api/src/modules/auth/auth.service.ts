@@ -221,9 +221,16 @@ export class AuthService {
 
     this.logger.info('Email verified', { userId: user.id });
 
+    const verified = updated ?? user;
+    const tokens = this.getAuthTokens(verified);
+
     return {
       message: 'Your email has been verified',
-      data: { email: updated?.email ?? user.email },
+      data: {
+        email: verified.email,
+        user: verified,
+        tokens,
+      },
     };
   }
 

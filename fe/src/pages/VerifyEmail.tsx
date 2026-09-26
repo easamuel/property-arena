@@ -13,10 +13,14 @@ import {
   isValidEmail,
 } from '@/components/auth/AuthFormControls';
 import { AUTH_SERVICE } from '@/services/auth';
+import { API, getApiBaseUrl } from '@/services/api';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/useToast';
 
-type Status = 'verifying' | 'success' | 'error';
+type Status = 'verifying' | 'success' | 'error' | 'waiting';
+
+const homeForRole = (role?: string) =>
+  role?.toLowerCase() === 'admin' ? '/admin' : '/dashboard';
 
 const ResendPanel: React.FC<{ initialEmail: string; initialDevLink?: string }> = ({
   initialEmail,
@@ -78,35 +82,89 @@ const VerifyEmail: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const accessToken = useAuthStore((s) => s.accessToken);
   const setUser = useAuthStore((s) => s.setUser);
+  const setSession = useAuthStore((s) => s.setSession);
 
-  const [status, setStatus] = useState<Status>('verifying');
+  const [status, setStatus] = useState<Status>(token ? 'verifying' : 'waiting');
   const [message, setMessage] = useState('');
+  const [liveHint, setLiveHint] = useState('Waiting for you to open the link…');
   const requested = useRef(false);
 
+  // Device A: poll profile until another device verifies
+  useEffect(() => {
+    if (token || !accessToken) return;
+
+    let cancelled = false;
+    let ticks = 0;
+
+    const poll = async () => {
+      try {
+        const res = await API(`${getApiBaseUrl()}/users/me`, { method: 'GET', auth: true });
+        if (cancelled) return;
+        const me = res?.data;
+        if (me?.isEmailVerified) {
+          setUser(me);
+          setStatus('success');
+          setLiveHint('Verified on another device — opening your arena…');
+          window.setTimeout(() => {
+            navigate(homeForRole(me.role), { replace: true });
+          }, 900);
+          return;
+        }
+        ticks += 1;
+        if (ticks % 4 === 0) {
+          setLiveHint('Still waiting — check your phone or inbox…');
+        }
+      } catch {
+        /* keep waiting */
+      }
+    };
+
+    void poll();
+    const id = window.setInterval(poll, 2500);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [token, accessToken, setUser, navigate]);
+
+  // Device B: open link with token → verify, sign in, go to dashboard
   useEffect(() => {
     if (!token || requested.current) return;
     requested.current = true;
+
     AUTH_SERVICE.verifyEmail(token)
       .then((res) => {
         setStatus('success');
+        const nextUser = res.data?.user as Record<string, unknown> | undefined;
+        const nextToken = res.data?.tokens?.accessToken;
+        if (nextUser && nextToken) {
+          setSession(
+            { ...nextUser, isEmailVerified: true },
+            nextToken,
+          );
+          window.setTimeout(() => {
+            navigate(homeForRole(String(nextUser.role || '')), { replace: true });
+          }, 1100);
+          return;
+        }
         const current = useAuthStore.getState().user;
         if (current && (!res.data?.email || current.email === res.data.email)) {
           setUser({ ...current, isEmailVerified: true });
         }
+        window.setTimeout(() => {
+          const auth = useAuthStore.getState();
+          if (auth.accessToken) {
+            navigate(homeForRole(auth.user?.role), { replace: true });
+          } else {
+            navigate('/login?redirect=/dashboard', { replace: true });
+          }
+        }, 1100);
       })
       .catch((err: any) => {
         setStatus('error');
         setMessage(getErrorMessage(err, 'We could not verify your email. Please try again.'));
       });
-  }, [token, setUser]);
-
-  const continuePath = accessToken
-    ? user?.role === 'admin'
-      ? '/admin'
-      : ['agent', 'developer', 'landlord'].includes(user?.role)
-        ? '/dashboard'
-        : '/'
-    : '/login';
+  }, [token, setUser, setSession, navigate]);
 
   if (token) {
     return (
@@ -128,10 +186,22 @@ const VerifyEmail: React.FC = () => {
               </StatusIcon>
               <h2 className="text-2xl font-bold tracking-tight text-ink">Email verified</h2>
               <p className="mt-2 text-sm text-ink-muted">
-                Thanks for confirming your email. Your PropertyArena account is ready to go.
+                Taking you into your PropertyArena workspace…
               </p>
-              <AuthButton type="button" className="mt-6" onClick={() => navigate(continuePath, { replace: true })}>
-                {accessToken ? 'Continue' : 'Continue to sign in'}
+              <AuthButton
+                type="button"
+                className="mt-6"
+                onClick={() => {
+                  const auth = useAuthStore.getState();
+                  navigate(
+                    auth.accessToken
+                      ? homeForRole(auth.user?.role)
+                      : '/login?redirect=/dashboard',
+                    { replace: true },
+                  );
+                }}
+              >
+                Open dashboard
               </AuthButton>
             </>
           )}
@@ -158,29 +228,53 @@ const VerifyEmail: React.FC = () => {
   return (
     <AuthLayout
       footer={
-        <Link to={accessToken ? continuePath : '/login'} className="font-semibold text-ink-secondary hover:text-ink hover:underline">
+        <Link
+          to={accessToken ? homeForRole(user?.role) : '/login'}
+          className="font-semibold text-ink-secondary hover:text-ink hover:underline"
+        >
           {accessToken ? "I'll do this later" : 'Back to sign in'}
         </Link>
       }
     >
-      <div className="text-center">
-        <StatusIcon tone="success">
-          <FiMail size={28} />
-        </StatusIcon>
-        <h2 className="text-2xl font-bold tracking-tight text-ink">
-          {navState.justSignedUp ? 'Account created! Check your inbox' : 'Check your inbox'}
-        </h2>
-        <p className="mt-2 text-sm text-ink-muted">
-          We sent a verification link to{' '}
-          {displayEmail ? (
-            <span className="font-semibold text-ink">{displayEmail}</span>
-          ) : (
-            'your email address'
-          )}
-          . Click the link to confirm your account. It expires in 24 hours.
-        </p>
-        <ResendPanel initialEmail={displayEmail} initialDevLink={navState.devLink} />
-        <p className="mt-5 text-xs text-ink-muted">Can&apos;t find it? Check your spam or promotions folder.</p>
+      <div className="text-center" role="status" aria-live="polite">
+        {status === 'success' ? (
+          <>
+            <StatusIcon tone="success">
+              <FiCheckCircle size={28} />
+            </StatusIcon>
+            <h2 className="text-2xl font-bold tracking-tight text-ink">You&apos;re verified</h2>
+            <p className="mt-2 text-sm text-ink-muted">{liveHint}</p>
+          </>
+        ) : (
+          <>
+            <StatusIcon tone="success">
+              <FiMail size={28} />
+            </StatusIcon>
+            <h2 className="text-2xl font-bold tracking-tight text-ink">
+              {navState.justSignedUp ? 'Account created! Check your inbox' : 'Check your inbox'}
+            </h2>
+            <p className="mt-2 text-sm text-ink-muted">
+              We sent a verification link to{' '}
+              {displayEmail ? (
+                <span className="font-semibold text-ink">{displayEmail}</span>
+              ) : (
+                'your email address'
+              )}
+              . Open it on this device or any other — this page updates the moment you verify.
+            </p>
+            {accessToken && (
+              <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-brand-green/10 px-3 py-1.5 text-xs font-semibold text-brand-green-dark">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-green opacity-60" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-green" />
+                </span>
+                {liveHint}
+              </p>
+            )}
+            <ResendPanel initialEmail={displayEmail} initialDevLink={navState.devLink} />
+            <p className="mt-5 text-xs text-ink-muted">Can&apos;t find it? Check your spam or promotions folder.</p>
+          </>
+        )}
       </div>
     </AuthLayout>
   );

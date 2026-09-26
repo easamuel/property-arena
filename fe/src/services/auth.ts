@@ -3,7 +3,12 @@ import { API, getApiBaseUrl } from './api';
 export interface AuthMessageResponse {
   success: boolean;
   message: string;
-  data?: { devLink?: string; email?: string };
+  data?: {
+    devLink?: string;
+    email?: string;
+    user?: Record<string, unknown>;
+    tokens?: { accessToken?: string };
+  };
 }
 
 const post = (path: string, body: Record<string, unknown>): Promise<AuthMessageResponse> =>
