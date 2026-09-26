@@ -54,6 +54,7 @@ import CmsPage from '@/pages/CmsPage';
 import SoldPropertiesPage from '@/pages/SoldPropertiesPage';
 import ScrollToTop from '@/components/ScrollToTop';
 import WorkspaceLayout from '@/layouts/WorkspaceLayout';
+import BuyerLayout from '@/layouts/BuyerLayout';
 import {
   WorkspaceHome,
   WorkspacePostProperty,
@@ -71,7 +72,21 @@ import {
   WorkspaceNotifications,
   WorkspaceSettings,
   WorkspaceHelp,
+  WorkspaceKyc,
 } from '@/pages/workspace';
+import {
+  BuyerHome,
+  BuyerProperties,
+  BuyerSaved,
+  BuyerAlerts,
+  BuyerMessages,
+  BuyerInquiries,
+  BuyerAppointments,
+  BuyerReviews,
+  BuyerPayments,
+  BuyerSettings,
+  BuyerSecurity,
+} from '@/pages/buyer';
 import { WORKSPACE_ROLES } from '@/lib/workspace';
 
 /** Root shell so every route (marketplace, auth, admin) resets scroll on navigation. */
@@ -146,6 +161,28 @@ export const router = createBrowserRouter([
           { path: 'notifications', element: <WorkspaceNotifications /> },
           { path: 'settings', element: <WorkspaceSettings /> },
           { path: 'help', element: <WorkspaceHelp /> },
+          { path: 'kyc', element: <WorkspaceKyc /> },
+        ],
+      },
+      {
+        path: '/buyer',
+        element: (
+          <ProtectedRoute requireRole={['user', 'buyer', 'tenant']} fallback={<div>Loading…</div>}>
+            <BuyerLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          { index: true, element: <BuyerHome /> },
+          { path: 'properties', element: <BuyerProperties /> },
+          { path: 'saved', element: <BuyerSaved /> },
+          { path: 'alerts', element: <BuyerAlerts /> },
+          { path: 'messages', element: <BuyerMessages /> },
+          { path: 'inquiries', element: <BuyerInquiries /> },
+          { path: 'appointments', element: <BuyerAppointments /> },
+          { path: 'reviews', element: <BuyerReviews /> },
+          { path: 'payments', element: <BuyerPayments /> },
+          { path: 'settings', element: <BuyerSettings /> },
+          { path: 'security', element: <BuyerSecurity /> },
         ],
       },
       {

@@ -23,7 +23,7 @@ const homeForRole = (role?: string) => {
   const r = role?.toLowerCase();
   if (r === 'admin') return '/admin';
   if (['agent', 'landlord', 'developer', 'agency'].includes(r || '')) return '/workspace';
-  return '/dashboard';
+  return '/buyer';
 };
 
 const ResendPanel: React.FC<{ initialEmail: string; initialDevLink?: string }> = ({
@@ -160,7 +160,7 @@ const VerifyEmail: React.FC = () => {
           if (auth.accessToken) {
             navigate(homeForRole(auth.user?.role), { replace: true });
           } else {
-            navigate('/login?redirect=/dashboard', { replace: true });
+            navigate('/login?redirect=/buyer', { replace: true });
           }
         }, 1100);
       })
@@ -200,7 +200,7 @@ const VerifyEmail: React.FC = () => {
                   navigate(
                     auth.accessToken
                       ? homeForRole(auth.user?.role)
-                      : '/login?redirect=/dashboard',
+                      : '/login?redirect=/buyer',
                     { replace: true },
                   );
                 }}

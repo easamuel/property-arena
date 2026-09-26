@@ -120,3 +120,28 @@ textarea {
 .admin-sidebar-link.active {
   @apply bg-white font-semibold text-admin-red;
 }
+
+@keyframes buyer-wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(14deg);
+  }
+  40% {
+    transform: rotate(-8deg);
+  }
+  60% {
+    transform: rotate(10deg);
+  }
+  80% {
+    transform: rotate(-4deg);
+  }
+}
+
+.buyer-wave {
+  display: inline-block;
+  transform-origin: 70% 70%;
+  animation: buyer-wave 1.4s ease-in-out infinite;
+}

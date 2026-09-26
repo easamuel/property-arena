@@ -9,6 +9,7 @@ import {
   FiUsers,
   FiBriefcase,
   FiBarChart2,
+  FiShield,
 } from 'react-icons/fi';
 import { useAuthStore } from '@/store/authStore';
 import { getWorkspaceCopy } from '@/lib/workspace';
@@ -104,6 +105,12 @@ export default function WorkspaceHome() {
                 className="inline-flex items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-4 py-2.5 text-sm font-semibold backdrop-blur transition hover:bg-white/20"
               >
                 <FiSend /> {copy.secondaryCta}
+              </Link>
+              <Link
+                to="/workspace/kyc"
+                className="inline-flex items-center gap-2 rounded-lg border border-emerald-300/40 bg-emerald-500/20 px-4 py-2.5 text-sm font-semibold backdrop-blur transition hover:bg-emerald-500/30"
+              >
+                <FiShield /> Get verified
               </Link>
             </div>
           </div>

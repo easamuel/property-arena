@@ -14,3 +14,4 @@ export { default as WorkspaceProfile } from './WorkspaceProfile';
 export { default as WorkspaceNotifications } from './WorkspaceNotifications';
 export { default as WorkspaceSettings } from './WorkspaceSettings';
 export { default as WorkspaceHelp } from './WorkspaceHelp';
+export { default as WorkspaceKyc } from './WorkspaceKyc';

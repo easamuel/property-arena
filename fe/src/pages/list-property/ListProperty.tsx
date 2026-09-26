@@ -97,7 +97,8 @@ const toApiPropertyType = (value: string) => {
 
 const formatNaira = (n: number) => `₦${n.toLocaleString()}`;
 
-const allowDemoFallback = !import.meta.env.PROD;
+/** Always show curated demo inventory so browse pages feel full (API + demos merge). */
+const allowDemoFallback = true;
 
 type SeoFilters = {
   purpose: string;
@@ -251,7 +252,7 @@ const PropertyList = ({ seoFilters, seoHeading, seoCanonicalPath }: Props = {}) 
       propertyType: toApiPropertyType(propertyType) || propertyType,
       bedroom,
       search: searchQ,
-      limit: 20,
+      limit: 48,
     }).map((d) => ({
       id: d.id,
       title: d.title,

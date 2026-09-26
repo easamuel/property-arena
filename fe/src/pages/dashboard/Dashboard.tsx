@@ -16,6 +16,7 @@ import {
 import { PROPERTY_SERVICE } from '@/services/property';
 import { useAuthStore } from '@/store/authStore';
 import { isWorkspaceRole } from '@/lib/workspace';
+import { isBuyerRole } from '@/lib/buyer';
 
 type Listing = {
   id?: string;
@@ -310,13 +311,14 @@ const Dashboard = () => {
   const desk = ROLE_DESKS[role];
   const firstName = String(user?.name || 'there').split(' ')[0];
   const shouldUseWorkspace = isWorkspaceRole(user?.role);
+  const shouldUseBuyer = isBuyerRole(user?.role) && !shouldUseWorkspace;
 
   const [rows, setRows] = useState<Listing[]>([]);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(desk.showListings && !shouldUseWorkspace);
+  const [loading, setLoading] = useState(desk.showListings && !shouldUseWorkspace && !shouldUseBuyer);
 
   useEffect(() => {
-    if (shouldUseWorkspace || !desk.showListings) {
+    if (shouldUseWorkspace || shouldUseBuyer || !desk.showListings) {
       setLoading(false);
       setRows([]);
       setError('');
@@ -339,7 +341,7 @@ const Dashboard = () => {
     return () => {
       cancelled = true;
     };
-  }, [desk.showListings, role, shouldUseWorkspace]);
+  }, [desk.showListings, role, shouldUseWorkspace, shouldUseBuyer]);
 
   const stats = useMemo(() => {
     const available = rows.filter((r) => (r.status || '').toLowerCase() === 'available').length;
@@ -348,6 +350,10 @@ const Dashboard = () => {
 
   if (shouldUseWorkspace) {
     return <Navigate to="/workspace" replace />;
+  }
+
+  if (shouldUseBuyer) {
+    return <Navigate to="/buyer" replace />;
   }
 
   const PrimaryIcon = desk.primary.icon;

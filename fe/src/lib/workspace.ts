@@ -15,6 +15,7 @@ import {
   FiUser,
   FiUsers,
   FiBriefcase,
+  FiShield,
 } from 'react-icons/fi';
 import { FaHandshake } from 'react-icons/fa';
 
@@ -77,6 +78,7 @@ export const WORKSPACE_NAV: WorkspaceNavSection[] = [
     title: 'Account',
     items: [
       { to: '/workspace/profile', label: 'Profile', icon: FiUser },
+      { to: '/workspace/kyc', label: 'Get Verified (KYC)', icon: FiShield },
       { to: '/workspace/notifications', label: 'Notifications', icon: FiBell, badge: 3 },
       { to: '/workspace/settings', label: 'Settings', icon: FiSettings },
       { to: '/workspace/help', label: 'Help & Support', icon: FiHelpCircle },

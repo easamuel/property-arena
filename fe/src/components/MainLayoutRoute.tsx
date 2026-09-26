@@ -7,7 +7,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-const WORKSPACE_ROLES = new Set(['agent', 'developer', 'landlord', 'admin']);
+const WORKSPACE_ROLES = new Set(['agent', 'developer', 'landlord', 'admin', 'agency']);
 
 /**
  * Workspace pages prefer the sidebar shell for pro accounts on first entry.

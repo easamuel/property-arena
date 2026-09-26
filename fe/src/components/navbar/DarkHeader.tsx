@@ -24,7 +24,7 @@ const DarkHeader = () => {
       ? '/admin'
       : ['agent', 'developer', 'landlord', 'agency'].includes(role)
         ? '/workspace'
-        : '/dashboard';
+        : '/buyer';
 
   return (
     <header className="sticky top-0 z-50 bg-[#0B1B3A] text-white">

@@ -41,6 +41,7 @@ import {
 import GoogleLiveSearch from '@/components/search/GoogleLiveSearch';
 import FaqSection from '@/components/seo/FaqSection';
 import { HOME_FAQS } from '@/data/page-faqs';
+import { filterDemoListings } from '@/data/demo-listings';
 
 const SEARCH_TABS: SearchTab[] = ['Buy', 'Rent', 'Land', 'Short Let', 'Commercial'];
 
@@ -60,48 +61,16 @@ const PURPOSES = [
   { title: 'Commercial', desc: 'Offices & spaces', to: '/properties?propertyType=commercial&location=Nigeria', icon: FaBuilding },
 ];
 
-const FALLBACK_FEATURED = [
-  {
-    id: 'f1',
-    title: '4 Bedroom Duplex with BQ',
-    location: 'Lekki Phase 1, Lagos',
-    price: '₦320,000,000',
-    beds: 4,
-    baths: 5,
-    area: '450sqm',
-    img: MEDIA.duplex,
-  },
-  {
-    id: 'f2',
-    title: 'Plot of land for sale at Wuse',
-    location: 'Wuse, Abuja',
-    price: '₦50,000,000',
-    beds: null as number | null,
-    baths: null as number | null,
-    area: '500sqm',
-    img: MEDIA.land,
-  },
-  {
-    id: 'f3',
-    title: 'Luxury waterfront apartment',
-    location: 'Ikoyi, Lagos',
-    price: '₦185,000,000',
-    beds: 3,
-    baths: 3,
-    area: '210sqm',
-    img: MEDIA.apartment,
-  },
-  {
-    id: 'f4',
-    title: 'Contemporary terrace home',
-    location: 'Ajah, Lagos',
-    price: '₦145,000,000',
-    beds: 4,
-    baths: 4,
-    area: '280sqm',
-    img: MEDIA.terrace,
-  },
-];
+const FALLBACK_FEATURED = filterDemoListings({ purpose: 'sale', limit: 8 }).map((d) => ({
+  id: d.id,
+  title: d.title,
+  location: d.location,
+  price: `₦${d.price.toLocaleString()}`,
+  beds: d.bedroom === '—' ? null : Number(d.bedroom),
+  baths: d.baths === '—' ? null : Number(d.baths),
+  area: d.areaSize,
+  img: d.img,
+}));
 
 const PARTNERS = [
   'Landmark',
@@ -242,12 +211,14 @@ const HomePage = () => {
 
   const featured = (() => {
     if (featuredListings?.length) {
-      return featuredListings.slice(0, 4).map(mapListing);
+      return featuredListings.slice(0, 8).map(mapListing);
     }
     if (listings?.length) {
-      return listings.slice(0, 4).map(mapListing);
+      const api = listings.slice(0, 4).map(mapListing);
+      const demos = FALLBACK_FEATURED.filter((d) => !api.some((a) => a.id === d.id)).slice(0, 4);
+      return [...api, ...demos].slice(0, 8);
     }
-    return FALLBACK_FEATURED;
+    return FALLBACK_FEATURED.slice(0, 8);
   })();
 
   const goPopular = (name: string, state: string) => {
@@ -284,31 +255,39 @@ const HomePage = () => {
             heroReady ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0'
           }`}
         >
-          <div className="mb-10 max-w-2xl">
+          <div className="mx-auto mb-10 max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-green">PropertyArena</p>
             <h1 className="mt-3 text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl">
               Find the right property
             </h1>
-            <p className="mt-4 max-w-xl text-base text-white/80 sm:text-lg">
+            <p className="mx-auto mt-4 max-w-xl text-base text-white/80 sm:text-lg">
               Search homes, land and commercial property for sale and rent across Nigeria.
             </p>
           </div>
 
-          <div className="mb-3 flex flex-wrap gap-1.5 sm:gap-2">
-            {SEARCH_TABS.map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => switchTab(t)}
-                className={`rounded-full px-4 py-2 text-xs font-bold transition sm:text-sm ${
-                  tab === t
-                    ? 'bg-white text-brand-green shadow-md'
-                    : 'bg-white/15 text-white backdrop-blur-sm hover:bg-white/25'
-                }`}
-              >
-                {t}
-              </button>
-            ))}
+          <div className="mb-4 flex justify-center">
+            <div
+              className="inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-full border border-white/15 bg-black/25 p-1.5 backdrop-blur-md sm:gap-2"
+              role="tablist"
+              aria-label="Search purpose"
+            >
+              {SEARCH_TABS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === t}
+                  onClick={() => switchTab(t)}
+                  className={`rounded-full px-3.5 py-2 text-xs font-bold transition sm:px-5 sm:text-sm ${
+                    tab === t
+                      ? 'bg-white text-brand-green shadow-md'
+                      : 'text-white/90 hover:bg-white/15'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
 
           <GoogleLiveSearch tab={tab} className="max-w-3xl" />
@@ -320,7 +299,7 @@ const HomePage = () => {
               { value: '200+', label: 'Areas covered' },
               { value: '36+', label: 'States covered' },
             ].map((stat) => (
-              <div key={stat.label}>
+              <div key={stat.label} className="text-center sm:text-left">
                 <p className="text-xl font-extrabold text-white sm:text-2xl">{stat.value}</p>
                 <p className="mt-0.5 text-xs text-white/60">{stat.label}</p>
               </div>

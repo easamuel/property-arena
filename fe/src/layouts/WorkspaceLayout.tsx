@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { FiLogOut, FiMenu, FiSearch, FiX, FiBell } from 'react-icons/fi';
 import { useAuthStore } from '@/store/authStore';
 import Logo from '@/components/brand/Logo';
+import DashboardModeSwitcher from '@/components/DashboardModeSwitcher';
 import {
   WORKSPACE_NAV,
   getWorkspaceCopy,
@@ -146,7 +147,11 @@ const WorkspaceLayout = () => {
 
           <h1 className="shrink-0 text-lg font-bold text-[#0b2f24] sm:text-xl">{pageTitle}</h1>
 
-          <div className="mx-auto hidden max-w-xl flex-1 md:block">
+          <div className="hidden md:block">
+            <DashboardModeSwitcher />
+          </div>
+
+          <div className="mx-auto hidden max-w-xl flex-1 lg:block">
             <div className="relative">
               <FiSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
@@ -158,6 +163,9 @@ const WorkspaceLayout = () => {
           </div>
 
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            <div className="md:hidden">
+              <DashboardModeSwitcher compact />
+            </div>
             <Link
               to="/workspace/notifications"
               className="relative rounded-full p-2 text-gray-600 hover:bg-emerald-50 hover:text-[#0b2f24]"

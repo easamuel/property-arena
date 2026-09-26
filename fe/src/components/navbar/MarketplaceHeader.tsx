@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Logo from '@/components/brand/Logo';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useLayoutMode } from '@/hooks/useLayoutMode';
+import DashboardModeSwitcher from '@/components/DashboardModeSwitcher';
 
 type MegaLink = { label: string; to: string; hint?: string };
 type MegaColumn = { title: string; links: MegaLink[] };
@@ -128,7 +129,7 @@ const MarketplaceHeader = () => {
       ? '/admin'
       : ['agent', 'developer', 'landlord', 'agency'].includes(role)
         ? '/workspace'
-        : '/dashboard';
+        : '/buyer';
   const canUseWorkspace = ['agent', 'developer', 'landlord', 'agency', 'admin'].includes(role);
 
   const openWorkspace = () => {
@@ -239,6 +240,7 @@ const MarketplaceHeader = () => {
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {isAuthenticated ? <DashboardModeSwitcher compact className="hidden sm:inline-flex" /> : null}
           <button
             type="button"
             onClick={toggle}
@@ -378,11 +380,21 @@ const MarketplaceHeader = () => {
                     onClick={() => {
                       setLayoutMode('main');
                       closeAll();
+                      window.location.assign(
+                        ['agent', 'developer', 'landlord', 'agency'].includes(role)
+                          ? '/workspace'
+                          : '/buyer',
+                      );
                     }}
                     className="w-full rounded-xl border border-line px-3 py-2.5 text-sm font-semibold text-ink"
                   >
                     Switch to workspace view
                   </button>
+                )}
+                {isAuthenticated && (
+                  <div className="pt-1 sm:hidden">
+                    <DashboardModeSwitcher className="w-full justify-center" />
+                  </div>
                 )}
               </div>
             )}

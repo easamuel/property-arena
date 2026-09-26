@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaSearch, FaMapMarkerAlt, FaTimes } from 'react-icons/fa';
+import { FaSearch, FaMapMarkerAlt, FaTimes, FaSlidersH, FaChevronDown } from 'react-icons/fa';
 import { PROPERTY_SERVICE } from '@/services/property';
 import { filterDemoListings } from '@/data/demo-listings';
 import {
@@ -19,9 +19,15 @@ type Hit = {
   img: string;
 };
 
+export type HeroSearchFilters = {
+  propertyType: string;
+  bedroom: string;
+  minPrice: string;
+  maxPrice: string;
+};
+
 type Props = {
   className?: string;
-  /** Homepage purpose tab — drives placeholder + search destination */
   tab?: SearchTab;
   placeholder?: string;
 };
@@ -34,17 +40,56 @@ const TAB_PLACEHOLDERS: Record<SearchTab, string> = {
   Commercial: 'Search offices, shops and commercial space…',
 };
 
+const PROPERTY_TYPES = [
+  { value: '', label: 'Any type' },
+  { value: 'house', label: 'House / Duplex' },
+  { value: 'flats or apartments', label: 'Flat / Apartment' },
+  { value: 'land', label: 'Land' },
+  { value: 'commercial property', label: 'Commercial' },
+];
+
+const BED_OPTIONS = [
+  { value: '', label: 'Any beds' },
+  { value: '1', label: '1+' },
+  { value: '2', label: '2+' },
+  { value: '3', label: '3+' },
+  { value: '4', label: '4+' },
+  { value: '5', label: '5+' },
+];
+
+const emptyFilters = (): HeroSearchFilters => ({
+  propertyType: '',
+  bedroom: '',
+  minPrice: '',
+  maxPrice: '',
+});
+
+function purposeFromTab(tab: SearchTab): string | undefined {
+  if (tab === 'Buy' || tab === 'Land') return 'sale';
+  if (tab === 'Rent') return 'rent';
+  if (tab === 'Short Let') return 'shortlet';
+  return undefined;
+}
+
 /** Google-style live search — typeahead places + listings as you type. */
 export function GoogleLiveSearch({ className = '', tab = 'Buy', placeholder }: Props) {
   const navigate = useNavigate();
   const rootRef = useRef<HTMLDivElement>(null);
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState<HeroSearchFilters>(emptyFilters);
   const [hits, setHits] = useState<Hit[]>([]);
   const [loading, setLoading] = useState(false);
 
   const placeHints = useMemo(() => searchPlaces(q, 8), [q]);
   const inputPlaceholder = placeholder || TAB_PLACEHOLDERS[tab];
+  const activeFilterCount = [
+    filters.propertyType,
+    filters.bedroom,
+    filters.minPrice,
+    filters.maxPrice,
+  ].filter(Boolean).length;
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -53,6 +98,16 @@ export function GoogleLiveSearch({ className = '', tab = 'Buy', placeholder }: P
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
+
+  // Reset land-incompatible filters when switching tabs
+  useEffect(() => {
+    setFilters((prev) => {
+      if (tab === 'Land') return { ...prev, bedroom: '', propertyType: prev.propertyType || 'land' };
+      if (tab === 'Commercial')
+        return { ...prev, bedroom: '', propertyType: prev.propertyType || 'commercial property' };
+      return prev;
+    });
+  }, [tab]);
 
   useEffect(() => {
     const needle = q.trim();
@@ -64,11 +119,23 @@ export function GoogleLiveSearch({ className = '', tab = 'Buy', placeholder }: P
     let cancelled = false;
     setLoading(true);
     const t = window.setTimeout(async () => {
+      const purpose = purposeFromTab(tab);
+      const typeHint =
+        tab === 'Land'
+          ? 'land'
+          : tab === 'Commercial'
+            ? 'commercial'
+            : filters.propertyType || undefined;
       try {
         const res = await PROPERTY_SERVICE.getProperties({
           search: needle,
           limit: 8,
           page: 1,
+          ...(purpose ? { listingPurpose: purpose } : {}),
+          ...(typeHint ? { propertyType: typeHint } : {}),
+          ...(filters.bedroom ? { bedroom: filters.bedroom } : {}),
+          ...(filters.minPrice ? { minPrice: Number(filters.minPrice) } : {}),
+          ...(filters.maxPrice ? { maxPrice: Number(filters.maxPrice) } : {}),
         });
         if (cancelled) return;
         const data = (
@@ -95,7 +162,13 @@ export function GoogleLiveSearch({ className = '', tab = 'Buy', placeholder }: P
               img: p.media?.[0]?.url || filterDemoListings({ search: needle, limit: 1 })[0]?.img || '',
             }))
           : [];
-        const fromDemo = filterDemoListings({ search: needle, limit: 8 }).map((d) => ({
+        const fromDemo = filterDemoListings({
+          search: needle,
+          purpose,
+          propertyType: typeHint,
+          bedroom: filters.bedroom || undefined,
+          limit: 8,
+        }).map((d) => ({
           id: d.id,
           title: d.title,
           location: d.location,
@@ -111,7 +184,13 @@ export function GoogleLiveSearch({ className = '', tab = 'Buy', placeholder }: P
       } catch {
         if (!cancelled) {
           setHits(
-            filterDemoListings({ search: needle, limit: 8 }).map((d) => ({
+            filterDemoListings({
+              search: needle,
+              purpose,
+              propertyType: typeHint,
+              bedroom: filters.bedroom || undefined,
+              limit: 8,
+            }).map((d) => ({
               id: d.id,
               title: d.title,
               location: d.location,
@@ -129,28 +208,40 @@ export function GoogleLiveSearch({ className = '', tab = 'Buy', placeholder }: P
       cancelled = true;
       window.clearTimeout(t);
     };
-  }, [q]);
+  }, [q, tab, filters.propertyType, filters.bedroom, filters.minPrice, filters.maxPrice]);
+
+  const searchExtras = () => ({
+    bedroom: filters.bedroom || undefined,
+    minPrice: filters.minPrice || undefined,
+    maxPrice: filters.maxPrice || undefined,
+  });
+
+  const typeForNav = () => {
+    if (tab === 'Land') return filters.propertyType || 'land';
+    if (tab === 'Commercial') return filters.propertyType || 'commercial';
+    return filters.propertyType || undefined;
+  };
 
   const goSearch = (raw?: string) => {
     const term = (raw ?? q).trim();
     setOpen(false);
     if (!term) {
-      navigate(buildListingSearchUrl(tab, 'Nigeria'));
+      navigate(buildListingSearchUrl(tab, 'Nigeria', typeForNav(), searchExtras()));
       return;
     }
     const place = resolveSearchLocation(term);
     if (place.state && place.state !== 'Nigeria') {
-      navigate(buildListingSearchUrl(tab, place.label));
+      navigate(buildListingSearchUrl(tab, place.label, typeForNav(), searchExtras()));
       return;
     }
-    navigate(buildListingSearchUrl(tab, term));
+    navigate(buildListingSearchUrl(tab, term, typeForNav(), searchExtras()));
   };
 
   const goPlace = (label: string, state: string, area?: string) => {
     setQ(label);
     setOpen(false);
     const loc = area ? `${area}, ${state}` : state;
-    navigate(buildListingSearchUrl(tab, loc));
+    navigate(buildListingSearchUrl(tab, loc, typeForNav(), searchExtras()));
   };
 
   const onSubmit = (e: FormEvent) => {
@@ -198,6 +289,103 @@ export function GoogleLiveSearch({ className = '', tab = 'Buy', placeholder }: P
           </button>
         </div>
       </form>
+
+      <div className="mt-3 flex justify-center">
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((v) => !v)}
+          className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold shadow-sm backdrop-blur transition ${
+            filtersOpen || activeFilterCount
+              ? 'border-brand-green/40 bg-white text-brand-green'
+              : 'border-white/30 bg-white/15 text-white hover:bg-white/25'
+          }`}
+          aria-expanded={filtersOpen}
+        >
+          <FaSlidersH />
+          Filters
+          {activeFilterCount ? (
+            <span className="rounded-full bg-brand-green px-1.5 py-0.5 text-[10px] font-bold text-white">
+              {activeFilterCount}
+            </span>
+          ) : (
+            <FaChevronDown className={`text-[10px] transition ${filtersOpen ? 'rotate-180' : ''}`} />
+          )}
+        </button>
+      </div>
+
+      {filtersOpen ? (
+        <div className="mt-3 rounded-2xl border border-white/20 bg-white/95 p-3 shadow-xl backdrop-blur dark:bg-surface-elevated sm:p-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+            <label className="block text-xs font-semibold text-gray-600">
+              Property type
+              <select
+                value={filters.propertyType}
+                onChange={(e) => setFilters((f) => ({ ...f, propertyType: e.target.value }))}
+                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-800"
+              >
+                {PROPERTY_TYPES.map((o) => (
+                  <option key={o.label} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-xs font-semibold text-gray-600">
+              Bedrooms
+              <select
+                value={filters.bedroom}
+                onChange={(e) => setFilters((f) => ({ ...f, bedroom: e.target.value }))}
+                disabled={tab === 'Land' || tab === 'Commercial'}
+                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-800 disabled:opacity-50"
+              >
+                {BED_OPTIONS.map((o) => (
+                  <option key={o.label} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block text-xs font-semibold text-gray-600">
+              Min price (₦)
+              <input
+                type="number"
+                inputMode="numeric"
+                placeholder="e.g. 5000000"
+                value={filters.minPrice}
+                onChange={(e) => setFilters((f) => ({ ...f, minPrice: e.target.value }))}
+                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-800"
+              />
+            </label>
+            <label className="block text-xs font-semibold text-gray-600">
+              Max price (₦)
+              <input
+                type="number"
+                inputMode="numeric"
+                placeholder="e.g. 150000000"
+                value={filters.maxPrice}
+                onChange={(e) => setFilters((f) => ({ ...f, maxPrice: e.target.value }))}
+                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-2.5 py-2 text-sm text-gray-800"
+              />
+            </label>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => setFilters(emptyFilters())}
+              className="text-xs font-semibold text-gray-500 hover:text-gray-800"
+            >
+              Clear filters
+            </button>
+            <button
+              type="button"
+              onClick={() => goSearch()}
+              className="inline-flex items-center gap-2 rounded-full bg-brand-green px-4 py-2 text-xs font-bold text-white hover:bg-brand-green-dark"
+            >
+              <FaSearch /> Apply & search
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {showPanel && (
         <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-[70] max-h-[min(70vh,28rem)] overflow-y-auto overflow-x-hidden rounded-2xl border border-line bg-white shadow-2xl dark:bg-surface-elevated">

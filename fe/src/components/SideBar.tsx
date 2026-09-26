@@ -22,6 +22,7 @@ import {
   FaEnvelope,
   FaTags,
   FaUsers,
+  FaShieldAlt,
 } from 'react-icons/fa';
 import { useAuthStore } from '@/store/authStore';
 import { useLayoutMode } from '@/hooks/useLayoutMode';
@@ -43,6 +44,7 @@ const PRO_TABS: Tab[] = [
   { name: 'Subscription', icon: <FaRegCreditCard />, route: '/workspace/subscription' },
   { name: 'Billing History', icon: <FaClipboardList />, route: '/workspace/billing' },
   { name: 'Profile', icon: <FaUser />, route: '/workspace/profile' },
+  { name: 'Get Verified (KYC)', icon: <FaShieldAlt />, route: '/workspace/kyc' },
   { name: 'Notifications', icon: <FaBell />, route: '/workspace/notifications' },
   { name: 'Settings', icon: <FaCog />, route: '/workspace/settings' },
   { name: 'Help & Support', icon: <FaQuestionCircle />, route: '/workspace/help' },
@@ -50,11 +52,11 @@ const PRO_TABS: Tab[] = [
 
 const TABS_BY_ROLE: Record<string, Tab[]> = {
   user: [
-    { name: 'Dashboard', icon: <FaTachometerAlt />, route: '/dashboard', end: true },
-    { name: 'Browse', icon: <FaSearch />, route: '/properties' },
+    { name: 'Dashboard', icon: <FaTachometerAlt />, route: '/buyer', end: true },
+    { name: 'Saved', icon: <FaSearch />, route: '/buyer/saved' },
     { name: 'My requests', icon: <FaClipboardList />, route: '/dashboard/requests' },
     { name: 'Neighbourhoods', icon: <FaMapMarkedAlt />, route: '/neighbourhood' },
-    { name: 'Profile', icon: <FaUser />, route: '/profile' },
+    { name: 'Profile', icon: <FaUser />, route: '/buyer/settings' },
   ],
   agent: PRO_TABS,
   agency: PRO_TABS,

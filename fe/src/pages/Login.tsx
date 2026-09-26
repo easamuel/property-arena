@@ -21,7 +21,7 @@ const getRoleHome = (role?: string) => {
   const r = role?.toLowerCase();
   if (r === 'admin') return '/admin';
   if (['agent', 'landlord', 'developer', 'agency'].includes(r || '')) return '/workspace';
-  return '/dashboard';
+  return '/buyer';
 };
 
 type Errors = { email?: string; password?: string };

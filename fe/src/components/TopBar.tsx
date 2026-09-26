@@ -21,21 +21,29 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
 
   const canSwitchLayout =
     isAuthenticated &&
-    ['admin', 'agent', 'landlord', 'developer', 'agency'].includes(
+    ['admin', 'agent', 'landlord', 'developer', 'agency', 'user', 'buyer', 'tenant'].includes(
       String(user?.role || '').toLowerCase(),
     );
 
   const handleSwitchLayout = () => {
     const role = String(user?.role || '').toLowerCase();
     const isPro = ['agent', 'landlord', 'developer', 'agency'].includes(role);
+    const isBuyer = ['user', 'buyer', 'tenant', ''].includes(role);
     closeDropdown();
-    if (layoutMode === 'main' || (isPro && window.location.pathname.startsWith('/workspace'))) {
+    const onDash =
+      layoutMode === 'main' ||
+      window.location.pathname.startsWith('/workspace') ||
+      window.location.pathname.startsWith('/buyer') ||
+      window.location.pathname.startsWith('/admin');
+    if (onDash) {
       setLayoutMode('user');
       navigate('/');
       return;
     }
-    setLayoutMode('main');
-    if (isPro) navigate('/workspace');
+    setLayoutMode(isBuyer && !isPro ? 'user' : 'main');
+    if (role === 'admin') navigate('/admin');
+    else if (isPro) navigate('/workspace');
+    else navigate('/buyer');
   };
 
   return (
@@ -110,7 +118,7 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
                               String(user?.role || '').toLowerCase(),
                             )
                               ? '/workspace'
-                              : '/dashboard'
+                              : '/buyer'
                           }
                           onClick={closeDropdown}
                           className="rounded-xl px-3 py-2 text-sm font-medium transition hover:bg-chip"

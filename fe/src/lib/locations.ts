@@ -188,10 +188,21 @@ export function buildListingSearchUrl(
   tab: SearchTab,
   locationRaw: string,
   propertyType?: string,
+  extra?: {
+    bedroom?: string;
+    minPrice?: string;
+    maxPrice?: string;
+  },
 ): string {
   const kind = tabToSeoKind(tab);
   const trimmed = locationRaw.trim();
   const nationwide = !trimmed || trimmed.toLowerCase() === 'nigeria' || trimmed.toLowerCase() === 'all';
+
+  const applyExtra = (params: URLSearchParams) => {
+    if (extra?.bedroom) params.set('bedroom', extra.bedroom);
+    if (extra?.minPrice) params.set('minPrice', extra.minPrice);
+    if (extra?.maxPrice) params.set('maxPrice', extra.maxPrice);
+  };
 
   // Empty / Nigeria → nationwide /properties (not Lagos-only SEO path)
   if (nationwide || kind === 'commercial') {
@@ -210,20 +221,23 @@ export function buildListingSearchUrl(
     }
     if (!nationwide) params.set('location', trimmed);
     else params.set('location', 'Nigeria');
+    applyExtra(params);
     return `/properties?${params.toString()}`;
   }
 
   const place = resolveSearchLocation(trimmed);
-  // commercial already returned above; kind is a real SEO path kind here
   const seoKind = kind as SeoListingKind;
   let path = buildSeoPath(seoKind, place.state, place.area);
+  const params = new URLSearchParams();
   if (propertyType && seoKind !== 'land') {
     const pt = propertyType.toLowerCase();
     if (pt && pt !== 'land' && pt !== 'commercial') {
-      path += `?propertyType=${encodeURIComponent(pt)}`;
+      params.set('propertyType', pt);
     }
   }
-  return path;
+  applyExtra(params);
+  const qs = params.toString();
+  return qs ? `${path}?${qs}` : path;
 }
 
 import { MEDIA } from '@/data/media';

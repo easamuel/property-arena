@@ -1,0 +1,11 @@
+export { default as BuyerHome } from './BuyerHome';
+export { default as BuyerProperties } from './BuyerProperties';
+export { default as BuyerSaved } from './BuyerSaved';
+export { default as BuyerAlerts } from './BuyerAlerts';
+export { default as BuyerMessages } from './BuyerMessages';
+export { default as BuyerInquiries } from './BuyerInquiries';
+export { default as BuyerAppointments } from './BuyerAppointments';
+export { default as BuyerReviews } from './BuyerReviews';
+export { default as BuyerPayments } from './BuyerPayments';
+export { default as BuyerSettings } from './BuyerSettings';
+export { default as BuyerSecurity } from './BuyerSecurity';
